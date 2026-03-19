@@ -8,15 +8,16 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
-  const { canUseReferrerPortal, canUseProviderPortal } = session.user.company;
+  const { canUseReferrerPortal, canUseProviderPortal, providerApplicationPending } = session.user.company;
 
   // Redirect to appropriate portal
   if (canUseReferrerPortal) {
     redirect('/dashboard/referrer');
   } else if (canUseProviderPortal) {
     redirect('/dashboard/provider');
+  } else if (providerApplicationPending) {
+    redirect('/pending-approval');
   } else {
-    // Fallback - shouldn't happen with proper validation
     redirect('/');
   }
 }

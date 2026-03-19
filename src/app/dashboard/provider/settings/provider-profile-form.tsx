@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   Card,
   CardContent,
@@ -23,10 +24,13 @@ import {
 } from '@/components/ui';
 import type { ProviderProfileWithCompany, CommissionType } from '@/lib/types';
 import { saveProviderProfile } from './actions';
+import { UploadButton } from '@/lib/uploadthing';
+import { ImageIcon, X } from 'lucide-react';
 
 interface ProviderProfileFormProps {
   profile: ProviderProfileWithCompany | null;
   categories: string[];
+  currentLogoUrl?: string | null;
 }
 
 interface FormData {
@@ -36,9 +40,10 @@ interface FormData {
   commissionType: CommissionType;
   commissionValue: number;
   isPublished: boolean;
+  logoUrl: string | null;
 }
 
-export function ProviderProfileForm({ profile, categories }: ProviderProfileFormProps) {
+export function ProviderProfileForm({ profile, categories, currentLogoUrl }: ProviderProfileFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -51,6 +56,7 @@ export function ProviderProfileForm({ profile, categories }: ProviderProfileForm
     commissionType: (profile?.commissionType as CommissionType) ?? 'PERCENT',
     commissionValue: profile ? Number(profile.commissionValue) : 10,
     isPublished: profile?.isPublished ?? true,
+    logoUrl: currentLogoUrl ?? null,
   });
 
   const handleCategoryToggle = (category: string) => {
@@ -72,6 +78,7 @@ export function ProviderProfileForm({ profile, categories }: ProviderProfileForm
       const result = await saveProviderProfile({
         ...formData,
         commissionType: formData.commissionType as 'PERCENT' | 'FLAT',
+        logoUrl: formData.logoUrl,
       });
 
       if (!result.success) {
@@ -111,6 +118,55 @@ export function ProviderProfileForm({ profile, categories }: ProviderProfileForm
               Profile saved successfully!
             </div>
           )}
+
+          {/* Logo Upload */}
+          <div className="space-y-3">
+            <Label>Company Logo</Label>
+            <div className="flex items-center gap-4">
+              <div className="h-20 w-20 rounded-lg border-2 border-dashed flex items-center justify-center overflow-hidden shrink-0 bg-muted/30">
+                {formData.logoUrl ? (
+                  <Image
+                    src={formData.logoUrl}
+                    alt="Company logo"
+                    width={80}
+                    height={80}
+                    className="h-full w-full object-cover rounded-lg"
+                  />
+                ) : (
+                  <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex-1 space-y-2">
+                <UploadButton
+                  endpoint="providerLogo"
+                  onClientUploadComplete={(res) => {
+                    const url = res?.[0]?.url;
+                    if (url) {
+                      setFormData((prev) => ({ ...prev, logoUrl: url }));
+                    }
+                  }}
+                  onUploadError={(error) => setError(`Logo upload failed: ${error.message}`)}
+                  appearance={{
+                    button: 'ut-ready:bg-primary ut-ready:text-primary-foreground text-sm h-9 px-4 rounded-md',
+                    allowedContent: 'text-xs text-muted-foreground',
+                  }}
+                />
+                {formData.logoUrl && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive h-7 px-2"
+                    onClick={() => setFormData((prev) => ({ ...prev, logoUrl: null }))}
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Remove logo
+                  </Button>
+                )}
+                <p className="text-xs text-muted-foreground">PNG, JPG up to 4MB. Shown on your provider card.</p>
+              </div>
+            </div>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="zipCode">Service Area ZIP Code</Label>

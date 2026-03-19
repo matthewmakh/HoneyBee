@@ -4,10 +4,12 @@ import type {
   ProviderProfile,
   Lead,
   WalletTransaction,
+  WithdrawalRequest,
   UserRole,
   CommissionType,
   LeadStatus,
   WalletTransactionType,
+  WithdrawalStatus,
 } from '@prisma/client';
 
 // Re-export Prisma types
@@ -17,10 +19,12 @@ export type {
   ProviderProfile,
   Lead,
   WalletTransaction,
+  WithdrawalRequest,
   UserRole,
   CommissionType,
   LeadStatus,
   WalletTransactionType,
+  WithdrawalStatus,
 };
 
 // ============================================================================
@@ -37,8 +41,10 @@ export interface SessionUser {
     id: string;
     name: string;
     memberId: string;
+    logoUrl: string | null;
     canUseReferrerPortal: boolean;
     canUseProviderPortal: boolean;
+    providerApplicationPending: boolean;
     isSuspended: boolean;
   };
 }
@@ -62,6 +68,10 @@ export interface ProviderProfileWithCompany extends ProviderProfile {
 
 export interface WalletTransactionWithLead extends WalletTransaction {
   lead: Lead;
+}
+
+export interface WithdrawalRequestWithCompany extends WithdrawalRequest {
+  company: Company;
 }
 
 // ============================================================================
@@ -91,6 +101,8 @@ export interface AdminDashboardStats {
   totalCompanies: number;
   activeCompanies: number;
   suspendedCompanies: number;
+  pendingApplicationsCount: number;
+  pendingWithdrawalsCount: number;
 }
 
 // ============================================================================
@@ -104,6 +116,7 @@ export interface SubmitLeadInput {
   homeownerAddress: string;
   projectDescription: string;
   category: string;
+  photos?: string[];
 }
 
 export interface UpdateProviderProfileInput {
@@ -113,6 +126,12 @@ export interface UpdateProviderProfileInput {
   commissionType: CommissionType;
   commissionValue: number;
   isPublished: boolean;
+  logoUrl?: string | null;
+}
+
+export interface WithdrawalRequestInput {
+  amount: number;
+  notes?: string;
 }
 
 export interface MarkJobCompletedInput {

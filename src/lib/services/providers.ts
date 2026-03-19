@@ -21,6 +21,7 @@ interface UpdateProviderProfileInput {
   commissionType: CommissionType;
   commissionValue: number;
   isPublished: boolean;
+  logoUrl?: string | null;
 }
 
 /**
@@ -83,17 +84,28 @@ export async function updateProviderProfile(
     throw new Error('Provider profile not found');
   }
 
+  // Build data object conditionally for logoUrl
+  const updateData: Parameters<typeof prisma.providerProfile.update>[0]['data'] = {
+    zipCode: input.zipCode,
+    serviceCategories: input.serviceCategories,
+    shortDescription: input.shortDescription,
+    commissionType: input.commissionType,
+    commissionValue: input.commissionValue,
+    isPublished: input.isPublished,
+    updatedAt: new Date(),
+  };
+
+  // Update company logo if provided
+  if (input.logoUrl !== undefined) {
+    await prisma.company.update({
+      where: { id: companyId },
+      data: { logoUrl: input.logoUrl },
+    });
+  }
+
   return prisma.providerProfile.update({
     where: { companyId },
-    data: {
-      zipCode: input.zipCode,
-      serviceCategories: input.serviceCategories,
-      shortDescription: input.shortDescription,
-      commissionType: input.commissionType,
-      commissionValue: input.commissionValue,
-      isPublished: input.isPublished,
-      updatedAt: new Date(),
-    },
+    data: updateData,
     include: {
       company: true,
     },

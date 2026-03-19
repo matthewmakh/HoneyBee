@@ -9,7 +9,7 @@ export async function middleware(request: NextRequest) {
   // Public routes that don't require authentication
   const publicRoutes = ['/', '/login', '/register'];
   const isPublicRoute = publicRoutes.some(route => pathname === route);
-  const isAuthRoute = pathname.startsWith('/api/auth');
+  const isAuthRoute = pathname.startsWith('/api/auth') || pathname.startsWith('/api/uploadthing');
 
   // Allow auth API routes
   if (isAuthRoute) {
@@ -38,9 +38,21 @@ export async function middleware(request: NextRequest) {
 
   // Check if company is suspended
   if (session?.user?.company?.isSuspended && session.user.role !== 'SUPERADMIN') {
-    // Allow access to view suspended page only
     if (pathname !== '/suspended') {
       return NextResponse.redirect(new URL('/suspended', request.url));
+    }
+  }
+
+  // Handle users with pending-only provider application (no portal access yet)
+  if (session?.user && session.user.role !== 'SUPERADMIN') {
+    const { canUseReferrerPortal, canUseProviderPortal, providerApplicationPending } = session.user.company;
+    const hasNoPortalAccess = !canUseReferrerPortal && !canUseProviderPortal;
+
+    if (hasNoPortalAccess && providerApplicationPending) {
+      // Only allow pending-approval page and sign out
+      if (pathname !== '/pending-approval') {
+        return NextResponse.redirect(new URL('/pending-approval', request.url));
+      }
     }
   }
 

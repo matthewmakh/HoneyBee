@@ -12,6 +12,7 @@ interface SubmitLeadInput {
   homeownerAddress: string;
   projectDescription: string;
   category: string;
+  photos?: string[];
 }
 
 export async function submitLead(input: SubmitLeadInput): Promise<ApiResult<{ leadId: string }>> {
@@ -46,6 +47,7 @@ export async function submitLead(input: SubmitLeadInput): Promise<ApiResult<{ le
       homeownerAddress: input.homeownerAddress,
       projectDescription: input.projectDescription,
       category: input.category,
+      photos: input.photos ?? [],
     });
 
     return {

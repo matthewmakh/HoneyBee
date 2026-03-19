@@ -27,11 +27,12 @@ export async function registerUser(input: RegisterInput): Promise<ApiResult<{ co
       };
     }
 
-    // Create company and user
+    // Provider access requires admin approval — never granted at registration
     const company = await createCompany({
       name: input.companyName,
       canUseReferrerPortal: input.canUseReferrerPortal,
-      canUseProviderPortal: input.canUseProviderPortal,
+      canUseProviderPortal: false,
+      providerApplicationPending: input.canUseProviderPortal,
       userName: input.name,
       userEmail: input.email,
       userPassword: input.password,

@@ -38,31 +38,41 @@ enum WalletTransactionType {
   PLATFORM_PROFIT
 }
 
+enum WithdrawalStatus {
+  PENDING
+  COMPLETED
+  REJECTED
+}
+
 // ============================================================================
 // MODELS
 // ============================================================================
 
 model Company {
-  id                   String    @id @default(cuid())
-  name                 String
-  memberId             String    @unique // Format: HB-000001
-  canUseReferrerPortal Boolean   @default(false)
-  canUseProviderPortal Boolean   @default(false)
-  isSuspended          Boolean   @default(false)
-  cashBalance          Decimal   @default(0) @db.Decimal(12, 2)
-  benefitsBalance      Decimal   @default(0) @db.Decimal(12, 2)
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  id                          String    @id @default(cuid())
+  name                        String
+  memberId                    String    @unique // Format: HB-000001
+  logoUrl                     String?
+  canUseReferrerPortal        Boolean   @default(false)
+  canUseProviderPortal        Boolean   @default(false)
+  providerApplicationPending  Boolean   @default(false)
+  isSuspended                 Boolean   @default(false)
+  cashBalance                 Decimal   @default(0) @db.Decimal(12, 2)
+  benefitsBalance             Decimal   @default(0) @db.Decimal(12, 2)
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
 
   // Relations
-  users              User[]
-  providerProfile    ProviderProfile?
-  leadsAsProvider    Lead[]              @relation("ProviderLeads")
-  leadsAsReferrer    Lead[]              @relation("ReferrerLeads")
-  walletTransactions WalletTransaction[]
+  users               User[]
+  providerProfile     ProviderProfile?
+  leadsAsProvider     Lead[]               @relation("ProviderLeads")
+  leadsAsReferrer     Lead[]               @relation("ReferrerLeads")
+  walletTransactions  WalletTransaction[]
+  withdrawalRequests  WithdrawalRequest[]
 
   @@index([memberId])
   @@index([isSuspended])
+  @@index([providerApplicationPending])
 }
 
 model User {
@@ -109,6 +119,7 @@ model Lead {
   homeownerAddress        String         @db.Text
   projectDescription      String         @db.Text
   category                String
+  photos                  String[]
   status                  LeadStatus     @default(SUBMITTED)
   reportedJobValue        Decimal?       @db.Decimal(12, 2)
   commissionTypeSnapshot  CommissionType
@@ -143,5 +154,22 @@ model WalletTransaction {
   @@index([companyId])
   @@index([leadId])
   @@index([type])
+  @@index([createdAt])
+}
+
+model WithdrawalRequest {
+  id        String           @id @default(cuid())
+  companyId String
+  amount    Decimal          @db.Decimal(12, 2)
+  status    WithdrawalStatus @default(PENDING)
+  notes     String?          @db.Text
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  // Relations
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([status])
   @@index([createdAt])
 }

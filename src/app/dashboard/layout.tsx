@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {
   Avatar,
   AvatarFallback,
+  AvatarImage,
   Button,
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +17,7 @@ import {
   TabsTrigger,
 } from '@/components/ui';
 import { getInitials } from '@/lib/utils';
+import { Wallet, Clock } from 'lucide-react';
 
 export default async function DashboardLayout({
   children,
@@ -29,11 +31,21 @@ export default async function DashboardLayout({
   }
 
   const { user } = session;
-  const { canUseReferrerPortal, canUseProviderPortal } = user.company;
+  const { canUseReferrerPortal, canUseProviderPortal, providerApplicationPending } = user.company;
   const showBothPortals = canUseReferrerPortal && canUseProviderPortal;
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Pending provider application banner */}
+      {canUseReferrerPortal && providerApplicationPending && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-center">
+          <p className="text-sm text-amber-800">
+            <Clock className="inline h-3.5 w-3.5 mr-1 align-middle" />
+            Your provider application is <strong>pending admin review</strong>. You&apos;ll receive access once approved.
+          </p>
+        </div>
+      )}
+
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -44,7 +56,7 @@ export default async function DashboardLayout({
               </div>
               <span className="font-semibold hidden sm:inline-block">Honeybee</span>
             </Link>
-            
+
             {/* Portal Tabs */}
             {showBothPortals && (
               <Tabs defaultValue="referrer" className="hidden md:block">
@@ -58,6 +70,16 @@ export default async function DashboardLayout({
                 </TabsList>
               </Tabs>
             )}
+
+            {/* Wallet link for referrers */}
+            {canUseReferrerPortal && (
+              <Link href="/dashboard/referrer/wallet" className="hidden md:block">
+                <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
+                  <Wallet className="h-4 w-4" />
+                  Wallet
+                </Button>
+              </Link>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
@@ -65,11 +87,12 @@ export default async function DashboardLayout({
               {user.company.name}
               <span className="ml-1 text-xs">({user.company.memberId})</span>
             </span>
-            
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.company.logoUrl ?? undefined} />
                     <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -94,6 +117,14 @@ export default async function DashboardLayout({
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="md:hidden" />
                   </>
+                )}
+                {canUseReferrerPortal && (
+                  <DropdownMenuItem asChild className="md:hidden">
+                    <Link href="/dashboard/referrer/wallet" className="gap-2">
+                      <Wallet className="h-4 w-4" />
+                      Wallet
+                    </Link>
+                  </DropdownMenuItem>
                 )}
                 <DropdownMenuItem asChild>
                   <form

@@ -37,6 +37,7 @@ export const submitLeadSchema = z.object({
   homeownerAddress: z.string().min(5, 'Address is required'),
   projectDescription: z.string().min(10, 'Project description is required'),
   category: z.string().min(1, 'Category is required'),
+  photos: z.array(z.string().url()).max(5, 'Maximum 5 photos').optional().default([]),
 });
 
 export const acceptLeadSchema = z.object({
@@ -67,6 +68,7 @@ export const updateProviderProfileSchema = z.object({
   commissionType: z.enum(['PERCENT', 'FLAT']),
   commissionValue: z.number().positive('Commission value must be positive').max(100, 'Commission value too large'),
   isPublished: z.boolean(),
+  logoUrl: z.string().url().nullable().optional(),
 });
 
 export const createProviderProfileSchema = z.object({
@@ -88,6 +90,15 @@ export const suspendCompanySchema = z.object({
 
 export const deleteCompanySchema = z.object({
   companyId: z.string().cuid('Invalid company ID'),
+});
+
+// ============================================================================
+// Withdrawal Schemas
+// ============================================================================
+
+export const createWithdrawalSchema = z.object({
+  amount: z.number().positive('Amount must be positive').max(1000000, 'Amount too large'),
+  notes: z.string().max(500, 'Notes too long').optional(),
 });
 
 // ============================================================================

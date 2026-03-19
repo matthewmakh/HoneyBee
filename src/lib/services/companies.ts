@@ -11,6 +11,7 @@ interface CreateCompanyInput {
   name: string;
   canUseReferrerPortal: boolean;
   canUseProviderPortal: boolean;
+  providerApplicationPending?: boolean;
   userName: string;
   userEmail: string;
   userPassword: string;
@@ -54,6 +55,7 @@ export async function createCompany(input: CreateCompanyInput): Promise<Company>
         memberId,
         canUseReferrerPortal: input.canUseReferrerPortal,
         canUseProviderPortal: input.canUseProviderPortal,
+        providerApplicationPending: input.providerApplicationPending ?? false,
       },
     });
 
@@ -171,5 +173,61 @@ export async function getCompanyByMemberId(
 ): Promise<Company | null> {
   return prisma.company.findUnique({
     where: { memberId },
+  });
+}
+
+/**
+ * Get all companies with pending provider applications (Admin only)
+ */
+export async function getPendingProviderApplications(): Promise<CompanyWithProfile[]> {
+  return prisma.company.findMany({
+    where: { providerApplicationPending: true },
+    include: { providerProfile: true },
+    orderBy: { createdAt: 'asc' },
+  });
+}
+
+/**
+ * Approve a provider application (Admin only)
+ */
+export async function approveProviderApplication(companyId: string): Promise<Company> {
+  const company = await prisma.company.findUnique({ where: { id: companyId } });
+  if (!company) throw new Error('Company not found');
+  if (!company.providerApplicationPending) throw new Error('No pending application');
+
+  return prisma.company.update({
+    where: { id: companyId },
+    data: {
+      canUseProviderPortal: true,
+      providerApplicationPending: false,
+      updatedAt: new Date(),
+    },
+  });
+}
+
+/**
+ * Reject a provider application (Admin only)
+ */
+export async function rejectProviderApplication(companyId: string): Promise<Company> {
+  const company = await prisma.company.findUnique({ where: { id: companyId } });
+  if (!company) throw new Error('Company not found');
+  if (!company.providerApplicationPending) throw new Error('No pending application');
+
+  return prisma.company.update({
+    where: { id: companyId },
+    data: {
+      providerApplicationPending: false,
+      updatedAt: new Date(),
+    },
+  });
+}
+
+/**
+ * Update company logo URL
+ */
+export async function updateCompanyLogo(companyId: string, logoUrl: string | null): Promise<Company> {
+  return prisma.company.update({
+    where: { id: companyId },
+    data: { logoUrl, updatedAt: new Date() },
   });
 }

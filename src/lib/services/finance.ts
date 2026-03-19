@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db';
-import type { AdminDashboardStats, CommissionType } from '@/lib/types';
+import type { AdminDashboardStats, CommissionType, WithdrawalRequestWithCompany } from '@/lib/types';
 
 // ============================================================================
 // Commission Calculation (Server-Side Only)
@@ -202,6 +202,8 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
     pendingCount,
     completedCount,
     companyStats,
+    pendingApplicationsCount,
+    pendingWithdrawalsCount,
   ] = await Promise.all([
     getTotalPlatformProfit(),
     prisma.lead.count({
@@ -213,6 +215,8 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
     prisma.company.aggregate({
       _count: true,
     }),
+    prisma.company.count({ where: { providerApplicationPending: true } }),
+    prisma.withdrawalRequest.count({ where: { status: 'PENDING' } }),
   ]);
 
   const [activeCount, suspendedCount] = await Promise.all([
@@ -227,7 +231,112 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
     totalCompanies: companyStats._count,
     activeCompanies: activeCount,
     suspendedCompanies: suspendedCount,
+    pendingApplicationsCount,
+    pendingWithdrawalsCount,
   };
+}
+
+// ============================================================================
+// Withdrawal Requests
+// ============================================================================
+
+/**
+ * Create a withdrawal request for a referrer company
+ */
+export async function createWithdrawalRequest(
+  companyId: string,
+  amount: number,
+  notes?: string
+) {
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { cashBalance: true },
+  });
+
+  if (!company) throw new Error('Company not found');
+
+  if (Number(company.cashBalance) < amount) {
+    throw new Error('Insufficient cash balance');
+  }
+
+  // Check for existing pending request
+  const existing = await prisma.withdrawalRequest.findFirst({
+    where: { companyId, status: 'PENDING' },
+  });
+
+  if (existing) {
+    throw new Error('You already have a pending withdrawal request');
+  }
+
+  return prisma.withdrawalRequest.create({
+    data: { companyId, amount, notes: notes ?? null },
+  });
+}
+
+/**
+ * Get all pending withdrawal requests (Admin only)
+ */
+export async function getPendingWithdrawalRequests(): Promise<WithdrawalRequestWithCompany[]> {
+  return prisma.withdrawalRequest.findMany({
+    where: { status: 'PENDING' },
+    include: { company: true },
+    orderBy: { createdAt: 'asc' },
+  });
+}
+
+/**
+ * Get all withdrawal requests for a company
+ */
+export async function getCompanyWithdrawalRequests(companyId: string) {
+  return prisma.withdrawalRequest.findMany({
+    where: { companyId },
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
+/**
+ * Mark a withdrawal request as completed (Admin) — deducts from balance
+ */
+export async function completeWithdrawalRequest(requestId: string): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const request = await tx.withdrawalRequest.findUnique({ where: { id: requestId } });
+    if (!request) throw new Error('Withdrawal request not found');
+    if (request.status !== 'PENDING') throw new Error('Request is not pending');
+
+    const company = await tx.company.findUnique({
+      where: { id: request.companyId },
+      select: { cashBalance: true },
+    });
+
+    if (!company) throw new Error('Company not found');
+    if (Number(company.cashBalance) < Number(request.amount)) {
+      throw new Error('Insufficient balance to complete withdrawal');
+    }
+
+    await tx.withdrawalRequest.update({
+      where: { id: requestId },
+      data: { status: 'COMPLETED', updatedAt: new Date() },
+    });
+
+    await tx.company.update({
+      where: { id: request.companyId },
+      data: { cashBalance: { decrement: request.amount } },
+    });
+  });
+}
+
+/**
+ * Reject a withdrawal request (Admin)
+ */
+export async function rejectWithdrawalRequest(requestId: string): Promise<void> {
+  const request = await prisma.withdrawalRequest.findUnique({ where: { id: requestId } });
+  if (!request) throw new Error('Withdrawal request not found');
+  if (request.status !== 'PENDING') throw new Error('Request is not pending');
+
+  await prisma.withdrawalRequest.update({
+    where: { id: requestId },
+    data: { status: 'REJECTED', updatedAt: new Date() },
+  });
 }
 
 /**

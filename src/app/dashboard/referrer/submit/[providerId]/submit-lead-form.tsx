@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import {
   Card,
   CardContent,
@@ -19,6 +20,8 @@ import {
   SelectValue,
 } from '@/components/ui';
 import { submitLead } from './actions';
+import { UploadButton } from '@/lib/uploadthing';
+import { X, ImageIcon } from 'lucide-react';
 
 interface SubmitLeadFormProps {
   providerCompanyId: string;
@@ -29,6 +32,7 @@ export function SubmitLeadForm({ providerCompanyId, categories }: SubmitLeadForm
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [photos, setPhotos] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
     homeownerName: '',
@@ -47,6 +51,7 @@ export function SubmitLeadForm({ providerCompanyId, categories }: SubmitLeadForm
       const result = await submitLead({
         ...formData,
         providerCompanyId,
+        photos,
       });
 
       if (!result.success) {
@@ -62,6 +67,10 @@ export function SubmitLeadForm({ providerCompanyId, categories }: SubmitLeadForm
     }
   };
 
+  const removePhoto = (url: string) => {
+    setPhotos((prev) => prev.filter((p) => p !== url));
+  };
+
   return (
     <Card>
       <form onSubmit={handleSubmit}>
@@ -74,7 +83,7 @@ export function SubmitLeadForm({ providerCompanyId, categories }: SubmitLeadForm
               {error}
             </div>
           )}
-          
+
           <div className="space-y-2">
             <Label htmlFor="homeownerName">Homeowner Name</Label>
             <Input
@@ -143,6 +152,59 @@ export function SubmitLeadForm({ providerCompanyId, categories }: SubmitLeadForm
               disabled={isLoading}
               rows={4}
             />
+          </div>
+
+          {/* Photo Upload */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label>Job Photos</Label>
+              <span className="text-xs text-muted-foreground">{photos.length}/5 photos</span>
+            </div>
+
+            {photos.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {photos.map((url) => (
+                  <div key={url} className="relative group aspect-square rounded-md overflow-hidden border">
+                    <Image
+                      src={url}
+                      alt="Job photo"
+                      fill
+                      className="object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(url)}
+                      className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3 text-white" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {photos.length < 5 && (
+              <div className="rounded-md border-2 border-dashed p-4 text-center">
+                <ImageIcon className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground mb-2">Upload photos of the job site</p>
+                <UploadButton
+                  endpoint="leadPhotos"
+                  onClientUploadComplete={(res) => {
+                    const urls = res.map((f) => f.url);
+                    setPhotos((prev) => [...prev, ...urls].slice(0, 5));
+                  }}
+                  onUploadError={(err) => setError(`Photo upload failed: ${err.message}`)}
+                  appearance={{
+                    button: 'ut-ready:bg-secondary ut-ready:text-secondary-foreground text-sm h-8 px-3 rounded-md',
+                    allowedContent: 'text-xs text-muted-foreground',
+                  }}
+                />
+              </div>
+            )}
+
+            <p className="text-xs text-muted-foreground">
+              Optional — photos help providers understand the scope of the job.
+            </p>
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">

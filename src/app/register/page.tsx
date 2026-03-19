@@ -134,31 +134,39 @@ function RegisterForm() {
           </div>
           <div className="space-y-3 pt-2">
             <Label className="text-base">I want to:</Label>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-start space-x-2">
               <Checkbox
                 id="referrer"
                 checked={formData.canUseReferrerPortal}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   setFormData({ ...formData, canUseReferrerPortal: checked as boolean })
                 }
                 disabled={isLoading}
+                className="mt-0.5"
               />
-              <label htmlFor="referrer" className="text-sm">
-                Refer customers and earn commissions
-              </label>
+              <div>
+                <label htmlFor="referrer" className="text-sm font-medium cursor-pointer">
+                  Refer customers and earn commissions
+                </label>
+                <p className="text-xs text-muted-foreground">Instant access — start referring right away</p>
+              </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-start space-x-2">
               <Checkbox
                 id="provider"
                 checked={formData.canUseProviderPortal}
-                onCheckedChange={(checked) => 
+                onCheckedChange={(checked) =>
                   setFormData({ ...formData, canUseProviderPortal: checked as boolean })
                 }
                 disabled={isLoading}
+                className="mt-0.5"
               />
-              <label htmlFor="provider" className="text-sm">
-                Receive referrals as a service provider
-              </label>
+              <div>
+                <label htmlFor="provider" className="text-sm font-medium cursor-pointer">
+                  Receive referrals as a service provider
+                </label>
+                <p className="text-xs text-muted-foreground">Requires admin approval — we&apos;ll review your application</p>
+              </div>
             </div>
           </div>
         </CardContent>

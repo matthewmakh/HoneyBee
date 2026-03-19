@@ -12,6 +12,7 @@ interface SaveProfileInput {
   commissionType: CommissionType;
   commissionValue: number;
   isPublished: boolean;
+  logoUrl?: string | null;
 }
 
 export async function saveProviderProfile(input: SaveProfileInput): Promise<ApiResult<null>> {
@@ -41,8 +42,11 @@ export async function saveProviderProfile(input: SaveProfileInput): Promise<ApiR
     const existingProfile = await getProviderProfile(session.user.companyId);
 
     if (existingProfile) {
-      // Update existing profile
-      await updateProviderProfile(session.user.companyId, input);
+      // Update existing profile (logoUrl passed through to update company logo)
+      await updateProviderProfile(session.user.companyId, {
+        ...input,
+        logoUrl: input.logoUrl ?? null,
+      });
     } else {
       // Create new profile
       await createProviderProfile({
@@ -53,6 +57,11 @@ export async function saveProviderProfile(input: SaveProfileInput): Promise<ApiR
         commissionType: input.commissionType,
         commissionValue: input.commissionValue,
       });
+      // Set logo separately if provided
+      if (input.logoUrl) {
+        const { updateCompanyLogo } = await import('@/lib/services/companies');
+        await updateCompanyLogo(session.user.companyId, input.logoUrl);
+      }
     }
 
     return { success: true };

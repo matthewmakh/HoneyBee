@@ -19,6 +19,7 @@ interface CreateLeadInput {
   homeownerAddress: string;
   projectDescription: string;
   category: string;
+  photos?: string[];
 }
 
 /**
@@ -85,6 +86,7 @@ export async function createLead(input: CreateLeadInput): Promise<LeadWithCompan
       homeownerAddress: input.homeownerAddress,
       projectDescription: input.projectDescription,
       category: input.category,
+      photos: input.photos ?? [],
       status: 'SUBMITTED',
       commissionTypeSnapshot: providerProfile.commissionType,
       commissionValueSnapshot: providerProfile.commissionValue,

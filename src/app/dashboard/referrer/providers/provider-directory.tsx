@@ -3,11 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  Badge,
   Button,
   Input,
   Select,
@@ -15,11 +11,13 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Badge,
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
 } from '@/components/ui';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, getInitials } from '@/lib/utils';
 import type { ProviderProfileWithCompany, ProviderSearchFilters } from '@/lib/types';
-import { Search, MapPin, Send } from 'lucide-react';
+import { Search, MapPin, Send, Star } from 'lucide-react';
 import { useState } from 'react';
 
 interface ProviderDirectoryProps {
@@ -53,115 +51,139 @@ export function ProviderDirectory({
 
   return (
     <div className="space-y-6">
-      {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <Select
-                value={currentFilters.category ?? 'all'}
-                onValueChange={(value) => updateFilter('category', value === 'all' ? undefined : value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex gap-2">
-              <Input
-                placeholder="ZIP Code"
-                value={zipCode}
-                onChange={(e) => setZipCode(e.target.value)}
-                className="w-32"
-              />
-              <Button variant="outline" size="icon" onClick={handleZipSearch}>
-                <Search className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="flex-1">
-              <Select
-                value={currentFilters.sortBy ?? 'newest'}
-                onValueChange={(value) => updateFilter('sortBy', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="newest">Newest</SelectItem>
-                  <SelectItem value="commission">Commission Rate</SelectItem>
-                  <SelectItem value="name">Company Name</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Search & Filter Bar */}
+      <div className="flex flex-col md:flex-row gap-3">
+        {/* Category search styled like Instagram search */}
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Select
+            value={currentFilters.category ?? 'all'}
+            onValueChange={(value) => updateFilter('category', value === 'all' ? undefined : value)}
+          >
+            <SelectTrigger className="pl-9">
+              <SelectValue placeholder="Search by category (roofing, solar, dental...)" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat} value={cat}>
+                  {cat}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-      {/* Provider List */}
+        <div className="flex gap-2">
+          <Input
+            placeholder="ZIP Code"
+            value={zipCode}
+            onChange={(e) => setZipCode(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleZipSearch()}
+            className="w-28"
+          />
+          <Button variant="outline" size="icon" onClick={handleZipSearch}>
+            <MapPin className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <Select
+          value={currentFilters.sortBy ?? 'newest'}
+          onValueChange={(value) => updateFilter('sortBy', value)}
+        >
+          <SelectTrigger className="w-44">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="newest">Newest</SelectItem>
+            <SelectItem value="commission">Highest Commission</SelectItem>
+            <SelectItem value="name">A–Z</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Results count */}
+      {providers.length > 0 && (
+        <p className="text-sm text-muted-foreground">
+          {providers.length} provider{providers.length !== 1 ? 's' : ''} found
+          {currentFilters.category ? ` in ${currentFilters.category}` : ''}
+        </p>
+      )}
+
+      {/* Provider Grid */}
       {providers.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">No providers found matching your criteria.</p>
-          </CardContent>
-        </Card>
+        <div className="rounded-xl border border-dashed p-16 text-center">
+          <Search className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+          <p className="font-medium text-muted-foreground">No providers found</p>
+          <p className="text-sm text-muted-foreground mt-1">Try a different category or ZIP code.</p>
+        </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {providers.map((provider) => (
-            <Card key={provider.id} className="flex flex-col">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-lg">{provider.company.name}</CardTitle>
-                    <CardDescription className="text-xs">
-                      {provider.company.memberId}
-                    </CardDescription>
+            <div
+              key={provider.id}
+              className="group rounded-xl border bg-card hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col"
+            >
+              {/* Profile Header — Instagram-style */}
+              <div className="p-5 pb-3 flex items-start gap-3">
+                <Avatar className="h-14 w-14 shrink-0 ring-2 ring-background shadow-sm">
+                  <AvatarImage src={provider.company.logoUrl ?? undefined} />
+                  <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
+                    {getInitials(provider.company.name)}
+                  </AvatarFallback>
+                </Avatar>
+
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold leading-tight truncate">{provider.company.name}</p>
+                  <p className="text-xs text-muted-foreground font-mono mt-0.5">{provider.company.memberId}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <MapPin className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <span className="text-xs text-muted-foreground">{provider.zipCode}</span>
                   </div>
-                  <Badge variant="outline" className="shrink-0">
-                    {provider.commissionType === 'PERCENT'
-                      ? `${Number(provider.commissionValue)}%`
-                      : formatCurrency(Number(provider.commissionValue))}{' '}
-                    commission
-                  </Badge>
                 </div>
-              </CardHeader>
-              <CardContent className="flex-1 space-y-4">
-                <p className="text-sm text-muted-foreground line-clamp-3">
+
+                <Badge
+                  variant="secondary"
+                  className="shrink-0 text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200"
+                >
+                  <Star className="h-3 w-3 mr-1 fill-amber-500 text-amber-500" />
+                  {provider.commissionType === 'PERCENT'
+                    ? `${Number(provider.commissionValue)}%`
+                    : formatCurrency(Number(provider.commissionValue))}
+                </Badge>
+              </div>
+
+              {/* Description */}
+              <div className="px-5 pb-3 flex-1">
+                <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                   {provider.shortDescription}
                 </p>
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4 mr-1" />
-                  {provider.zipCode}
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {provider.serviceCategories.slice(0, 3).map((cat) => (
-                    <Badge key={cat} variant="secondary" className="text-xs">
-                      {cat}
-                    </Badge>
-                  ))}
-                  {provider.serviceCategories.length > 3 && (
-                    <Badge variant="secondary" className="text-xs">
-                      +{provider.serviceCategories.length - 3}
-                    </Badge>
-                  )}
-                </div>
-              </CardContent>
-              <CardContent className="pt-0">
-                <Link href={`/dashboard/referrer/submit/${provider.companyId}`}>
-                  <Button className="w-full">
-                    <Send className="mr-2 h-4 w-4" />
+              </div>
+
+              {/* Category Tags */}
+              <div className="px-5 pb-4 flex flex-wrap gap-1">
+                {provider.serviceCategories.slice(0, 4).map((cat) => (
+                  <Badge key={cat} variant="outline" className="text-xs px-2 py-0">
+                    {cat}
+                  </Badge>
+                ))}
+                {provider.serviceCategories.length > 4 && (
+                  <Badge variant="outline" className="text-xs px-2 py-0 text-muted-foreground">
+                    +{provider.serviceCategories.length - 4}
+                  </Badge>
+                )}
+              </div>
+
+              {/* CTA */}
+              <div className="px-4 pb-4">
+                <Link href={`/dashboard/referrer/submit/${provider.companyId}`} className="block">
+                  <Button className="w-full" size="sm">
+                    <Send className="mr-2 h-3.5 w-3.5" />
                     Submit Referral
                   </Button>
                 </Link>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
       )}

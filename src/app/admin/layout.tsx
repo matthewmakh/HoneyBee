@@ -13,7 +13,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui';
 import { getInitials } from '@/lib/utils';
-import { LayoutDashboard, Clock, Building2 } from 'lucide-react';
+import { LayoutDashboard, Clock, Building2, UserCheck, Wallet } from 'lucide-react';
+import { getPendingProviderApplications } from '@/lib/services/companies';
+import { getPendingWithdrawalRequests } from '@/lib/services/finance';
 
 export default async function AdminLayout({
   children,
@@ -32,10 +34,27 @@ export default async function AdminLayout({
 
   const { user } = session;
 
+  const [pendingApps, pendingWithdrawals] = await Promise.all([
+    getPendingProviderApplications(),
+    getPendingWithdrawalRequests(),
+  ]);
+
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/pending', label: 'Pending Deals', icon: Clock },
+    {
+      href: '/admin/applications',
+      label: 'Applications',
+      icon: UserCheck,
+      badge: pendingApps.length > 0 ? pendingApps.length : null,
+    },
     { href: '/admin/companies', label: 'Companies', icon: Building2 },
+    {
+      href: '/admin/withdrawals',
+      label: 'Withdrawals',
+      icon: Wallet,
+      badge: pendingWithdrawals.length > 0 ? pendingWithdrawals.length : null,
+    },
   ];
 
   return (
@@ -54,9 +73,14 @@ export default async function AdminLayout({
             <nav className="hidden md:flex items-center gap-1">
               {navItems.map((item) => (
                 <Link key={item.href} href={item.href}>
-                  <Button variant="ghost" size="sm" className="gap-2">
+                  <Button variant="ghost" size="sm" className="gap-2 relative">
                     <item.icon className="h-4 w-4" />
                     {item.label}
+                    {item.badge && (
+                      <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                        {item.badge}
+                      </span>
+                    )}
                   </Button>
                 </Link>
               ))}
@@ -84,9 +108,16 @@ export default async function AdminLayout({
               <div className="md:hidden">
                 {navItems.map((item) => (
                   <DropdownMenuItem key={item.href} asChild>
-                    <Link href={item.href} className="gap-2">
-                      <item.icon className="h-4 w-4" />
-                      {item.label}
+                    <Link href={item.href} className="gap-2 justify-between">
+                      <span className="flex items-center gap-2">
+                        <item.icon className="h-4 w-4" />
+                        {item.label}
+                      </span>
+                      {item.badge && (
+                        <span className="h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
+                          {item.badge}
+                        </span>
+                      )}
                     </Link>
                   </DropdownMenuItem>
                 ))}
