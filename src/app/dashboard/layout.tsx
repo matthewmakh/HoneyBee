@@ -16,6 +16,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui';
+import { SignOutButton } from '@/components/sign-out-button';
 import { getInitials } from '@/lib/utils';
 import { Wallet, Clock } from 'lucide-react';
 
@@ -126,22 +127,12 @@ export default async function DashboardLayout({
                     </Link>
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem
-                  onSelect={(e) => e.preventDefault()}
-                  className="p-0"
-                >
-                  <form
-                    action={async () => {
-                      'use server';
-                      await signOut({ redirectTo: '/login' });
-                    }}
-                    className="w-full"
-                  >
-                    <button type="submit" className="w-full text-left px-2 py-1.5">
-                      Sign out
-                    </button>
-                  </form>
-                </DropdownMenuItem>
+                <SignOutButton
+                  signOutAction={async () => {
+                    'use server';
+                    await signOut({ redirectTo: '/login' });
+                  }}
+                />
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
