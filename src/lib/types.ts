@@ -182,7 +182,9 @@ export interface ApiResult<T> {
 export interface ProviderSearchFilters {
   category?: string | undefined;
   zipCode?: string | undefined;
-  sortBy?: 'commission' | 'name' | 'newest' | undefined;
+  commissionType?: 'PERCENT' | 'FLAT' | undefined;
+  search?: string | undefined;
+  sortBy?: 'commission' | 'name' | 'newest' | 'rating' | 'jobs' | undefined;
   sortOrder?: 'asc' | 'desc' | undefined;
 }
 

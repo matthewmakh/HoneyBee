@@ -135,14 +135,9 @@ export async function searchProviders(
   filters: ProviderSearchFilters,
   excludeCompanyId?: string
 ): Promise<ProviderProfileWithCompany[]> {
-  // Build where clause
-  const whereClause: {
-    isPublished: boolean;
-    company: { isSuspended: boolean; canUseProviderPortal: boolean };
-    companyId?: { not: string };
-    serviceCategories?: { has: string };
-    zipCode?: { startsWith: string };
-  } = {
+  // Build where clause using Prisma types
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const whereClause: any = {
     isPublished: true,
     company: {
       isSuspended: false,
@@ -169,6 +164,22 @@ export async function searchProviders(
     };
   }
 
+  // Filter by commission type
+  if (filters.commissionType) {
+    whereClause.commissionType = filters.commissionType;
+  }
+
+  // Search by company name
+  if (filters.search) {
+    whereClause.company = {
+      ...whereClause.company,
+      name: {
+        contains: filters.search,
+        mode: 'insensitive',
+      },
+    };
+  }
+
   // Build order by clause
   type OrderByType = 
     | { createdAt: 'asc' | 'desc' }
@@ -184,6 +195,7 @@ export async function searchProviders(
   } else if (filters.sortBy === 'newest') {
     orderBy = { createdAt: filters.sortOrder ?? 'desc' };
   }
+  // Note: 'rating' and 'jobs' sorting is handled client-side after fetching stats
 
   return prisma.providerProfile.findMany({
     where: whereClause,
@@ -217,4 +229,25 @@ export async function getActiveServiceCategories(): Promise<string[]> {
   });
 
   return Array.from(categories).sort();
+}
+
+/**
+ * Get jobs completed count for multiple providers at once
+ */
+export async function getProvidersJobsCompleted(companyIds: string[]) {
+  const results = await prisma.lead.groupBy({
+    by: ['providerCompanyId'],
+    where: {
+      providerCompanyId: { in: companyIds },
+      status: 'COMPLETED_CONFIRMED',
+    },
+    _count: { id: true },
+  });
+
+  const jobsMap = new Map<string, number>();
+  for (const r of results) {
+    jobsMap.set(r.providerCompanyId, r._count.id);
+  }
+
+  return jobsMap;
 }

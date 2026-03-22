@@ -110,12 +110,14 @@ model ProviderProfile {
   shortDescription  String         @db.Text
   commissionType    CommissionType
   commissionValue   Decimal        @db.Decimal(10, 2)
+  portfolioPhotos   String[]       // Portfolio/work sample images
   isPublished       Boolean        @default(true)
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
   // Relations
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  reviews Review[]
 
   @@index([zipCode])
   @@index([isPublished])
@@ -146,6 +148,7 @@ model Lead {
   walletTransactions  WalletTransaction[]
   notes               LeadNote[]
   priceChangeRequests PriceChangeRequest[]
+  review              Review?
 
   @@index([providerCompanyId])
   @@index([referrerCompanyId])
@@ -227,4 +230,25 @@ model WithdrawalRequest {
   @@index([companyId])
   @@index([status])
   @@index([createdAt])
+}
+
+model Review {
+  id                String    @id @default(cuid())
+  providerProfileId String
+  leadId            String    @unique // One review per lead
+  token             String    @unique // URL token for shareable link
+  customerName      String    // Stored from lead's homeownerName
+  rating            Int?      // 1-5 stars, null until submitted
+  comment           String?   @db.Text
+  submittedAt       DateTime? // Null until customer submits
+  expiresAt         DateTime  // Link expires after this date
+  createdAt         DateTime  @default(now())
+
+  // Relations
+  providerProfile ProviderProfile @relation(fields: [providerProfileId], references: [id], onDelete: Cascade)
+  lead            Lead            @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@index([providerProfileId])
+  @@index([token])
+  @@index([submittedAt])
 }
