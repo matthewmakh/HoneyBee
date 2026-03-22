@@ -49,15 +49,23 @@ export default async function Home() {
               and earn commissions for every successful referral. A marketplace built on 
               trust and results.
             </p>
-            <div className="mt-10 flex items-center justify-center gap-4">
-              <Link href="/register">
-                <Button size="lg" className="px-8">
-                  Join as Referrer
-                </Button>
-              </Link>
-              <Link href="/register?provider=true">
-                <Button size="lg" variant="outline" className="px-8">
-                  List Your Services
+            <div className="mt-10 flex flex-col items-center gap-4">
+              <div className="flex items-center justify-center gap-4">
+                <Link href="/register">
+                  <Button size="lg" className="px-8">
+                    Join as Referrer
+                  </Button>
+                </Link>
+                <Link href="/register?provider=true">
+                  <Button size="lg" variant="outline" className="px-8">
+                    List Your Services
+                  </Button>
+                </Link>
+              </div>
+              <Link href="/demo">
+                <Button variant="ghost" size="lg" className="text-muted-foreground hover:text-foreground gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+                  Watch Demo
                 </Button>
               </Link>
             </div>

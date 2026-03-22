@@ -60,6 +60,51 @@ const config: Config = {
         soft: '0 2px 8px -2px rgba(0, 0, 0, 0.05), 0 4px 16px -4px rgba(0, 0, 0, 0.08)',
         card: '0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06)',
       },
+      keyframes: {
+        'demo-fade-in': {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        'demo-slide-in-right': {
+          '0%': { transform: 'translateX(30px)', opacity: '0' },
+          '100%': { transform: 'translateX(0)', opacity: '1' },
+        },
+        'demo-slide-out-left': {
+          '0%': { transform: 'translateX(0)', opacity: '1' },
+          '100%': { transform: 'translateX(-30px)', opacity: '0' },
+        },
+        'demo-scale-up': {
+          '0%': { transform: 'scale(0.9)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        'demo-scale-click': {
+          '0%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(0.95)' },
+          '100%': { transform: 'scale(1)' },
+        },
+        'demo-count-up': {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'demo-pulse-ring': {
+          '0%': { boxShadow: '0 0 0 0 rgba(234, 179, 8, 0.4)' },
+          '100%': { boxShadow: '0 0 0 8px rgba(234, 179, 8, 0)' },
+        },
+        'demo-spotlight': {
+          '0%': { opacity: '0', transform: 'scale(0.95) translateY(5px)' },
+          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+        },
+      },
+      animation: {
+        'demo-fade-in': 'demo-fade-in 0.4s ease-out forwards',
+        'demo-slide-in-right': 'demo-slide-in-right 0.4s ease-out forwards',
+        'demo-slide-out-left': 'demo-slide-out-left 0.3s ease-out forwards',
+        'demo-scale-up': 'demo-scale-up 0.5s ease-out forwards',
+        'demo-scale-click': 'demo-scale-click 0.3s ease-in-out',
+        'demo-count-up': 'demo-count-up 0.5s ease-out forwards',
+        'demo-pulse-ring': 'demo-pulse-ring 1.5s ease-out infinite',
+        'demo-spotlight': 'demo-spotlight 0.3s ease-out forwards',
+      },
     },
   },
   plugins: [],

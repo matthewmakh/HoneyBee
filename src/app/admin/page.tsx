@@ -3,11 +3,11 @@ import { getAdminOverviewStats } from '@/lib/services/admin';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge } from '@/components/ui';
 import { formatCurrency } from '@/lib/utils';
-import { 
-  DollarSign, 
-  TrendingUp, 
-  Users, 
-  Building2, 
+import {
+  DollarSign,
+  TrendingUp,
+  Users,
+  Building2,
   FileText,
   Clock,
   CheckCircle,
@@ -19,6 +19,7 @@ import {
   FileCheck,
   Activity,
   Gift,
+  Play,
 } from 'lucide-react';
 
 export default async function AdminDashboardPage() {
@@ -42,14 +43,22 @@ export default async function AdminDashboardPage() {
             Complete platform overview and management
           </p>
         </div>
-        {totalPending > 0 && (
-          <Link href="/admin/approvals">
-            <Button className="bg-yellow-600 hover:bg-yellow-700">
-              <AlertCircle className="h-4 w-4 mr-2" />
-              {totalPending} Pending Approvals
+        <div className="flex items-center gap-2">
+          <Link href="/demo">
+            <Button variant="outline" className="gap-2">
+              <Play className="h-4 w-4" />
+              Start Demo
             </Button>
           </Link>
-        )}
+          {totalPending > 0 && (
+            <Link href="/admin/approvals">
+              <Button className="bg-yellow-600 hover:bg-yellow-700">
+                <AlertCircle className="h-4 w-4 mr-2" />
+                {totalPending} Pending Approvals
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Pending Approvals Alert */}
