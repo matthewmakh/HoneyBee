@@ -4,7 +4,10 @@ import { auth } from '@/lib/auth';
 import { acceptLead, rejectLead } from '@/lib/services/leads';
 import type { ApiResult } from '@/lib/types';
 
-export async function acceptLeadAction(leadId: string): Promise<ApiResult<null>> {
+export async function acceptLeadAction(
+  leadId: string,
+  estimatedJobValue: number
+): Promise<ApiResult<null>> {
   try {
     const session = await auth();
 
@@ -16,7 +19,11 @@ export async function acceptLeadAction(leadId: string): Promise<ApiResult<null>>
       return { success: false, error: 'No provider portal access' };
     }
 
-    await acceptLead(leadId, session.user.companyId);
+    if (!estimatedJobValue || estimatedJobValue <= 0) {
+      return { success: false, error: 'Please provide a valid estimated job value' };
+    }
+
+    await acceptLead(leadId, session.user.companyId, estimatedJobValue);
 
     return { success: true };
   } catch (error) {

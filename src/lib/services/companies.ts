@@ -189,6 +189,7 @@ export async function getPendingProviderApplications(): Promise<CompanyWithProfi
 
 /**
  * Approve a provider application (Admin only)
+ * Providers automatically get referrer access as well
  */
 export async function approveProviderApplication(companyId: string): Promise<Company> {
   const company = await prisma.company.findUnique({ where: { id: companyId } });
@@ -199,6 +200,7 @@ export async function approveProviderApplication(companyId: string): Promise<Com
     where: { id: companyId },
     data: {
       canUseProviderPortal: true,
+      canUseReferrerPortal: true, // Providers automatically get referrer access
       providerApplicationPending: false,
       updatedAt: new Date(),
     },

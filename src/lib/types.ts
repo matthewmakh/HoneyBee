@@ -3,11 +3,14 @@ import type {
   User,
   ProviderProfile,
   Lead,
+  LeadNote,
+  PriceChangeRequest,
   WalletTransaction,
   WithdrawalRequest,
   UserRole,
   CommissionType,
   LeadStatus,
+  PriceChangeStatus,
   WalletTransactionType,
   WithdrawalStatus,
 } from '@prisma/client';
@@ -18,11 +21,14 @@ export type {
   User,
   ProviderProfile,
   Lead,
+  LeadNote,
+  PriceChangeRequest,
   WalletTransaction,
   WithdrawalRequest,
   UserRole,
   CommissionType,
   LeadStatus,
+  PriceChangeStatus,
   WalletTransactionType,
   WithdrawalStatus,
 };
@@ -62,6 +68,23 @@ export interface LeadWithCompanies extends Lead {
   referrerCompany: Company;
 }
 
+export interface LeadNoteWithAuthor extends LeadNote {
+  authorCompany: Company;
+}
+
+export interface LeadWithCompaniesAndNotes extends LeadWithCompanies {
+  notes: LeadNoteWithAuthor[];
+}
+
+export interface PriceChangeRequestWithLead extends PriceChangeRequest {
+  lead: LeadWithCompanies;
+  requestedByCompany: Company;
+}
+
+export interface LeadWithCompaniesNotesAndPriceRequests extends LeadWithCompaniesAndNotes {
+  priceChangeRequests: PriceChangeRequest[];
+}
+
 export interface ProviderProfileWithCompany extends ProviderProfile {
   company: Company;
 }
@@ -81,6 +104,8 @@ export interface WithdrawalRequestWithCompany extends WithdrawalRequest {
 export interface ReferrerDashboardStats {
   cashBalance: number;
   benefitsBalance: number;
+  pendingCashEarnings: number;      // From accepted leads (not yet completed)
+  pendingBenefitsEarnings: number;  // From accepted leads (not yet completed)
   totalReferrals: number;
   acceptedReferrals: number;
   completedReferrals: number;
@@ -97,6 +122,7 @@ export interface ProviderDashboardStats {
 export interface AdminDashboardStats {
   totalPlatformProfit: number;
   pendingConfirmationsCount: number;
+  pendingPriceChangesCount: number;
   completedDealsCount: number;
   totalCompanies: number;
   activeCompanies: number;

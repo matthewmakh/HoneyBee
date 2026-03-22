@@ -8,6 +8,11 @@ export default async function DashboardPage() {
     redirect('/login');
   }
 
+  // Superadmins go to admin dashboard by default
+  if (session.user.role === 'SUPERADMIN') {
+    redirect('/admin');
+  }
+
   const { canUseReferrerPortal, canUseProviderPortal, providerApplicationPending } = session.user.company;
 
   // Redirect to appropriate portal

@@ -65,5 +65,8 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.5.0",
     "typescript-eslint": "^8.56.1"
+  },
+  "overrides": {
+    "effect": "3.18.4"
   }
 }

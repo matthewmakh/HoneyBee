@@ -61,6 +61,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error('Your company account has been suspended.');
         }
 
+        // Update last active timestamp
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastActiveAt: new Date() },
+        });
+
         return {
           id: user.id,
           email: user.email,

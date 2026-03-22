@@ -1,7 +1,9 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { getProviderLeads } from '@/lib/services/leads';
+import { getProviderLeadsWithNotes } from '@/lib/services/leads';
 import { AcceptedLeadsList } from './accepted-leads-list';
+import { serializeDecimal } from '@/lib/utils';
+import type { LeadWithCompaniesNotesAndPriceRequests } from '@/lib/types';
 
 export default async function AcceptedLeadsPage() {
   const session = await auth();
@@ -14,7 +16,7 @@ export default async function AcceptedLeadsPage() {
     redirect('/dashboard');
   }
 
-  const leads = await getProviderLeads(session.user.companyId, 'ACCEPTED');
+  const leads = await getProviderLeadsWithNotes(session.user.companyId, 'ACCEPTED');
 
   return (
     <div className="space-y-6">
@@ -25,7 +27,7 @@ export default async function AcceptedLeadsPage() {
         </p>
       </div>
 
-      <AcceptedLeadsList leads={leads} />
+      <AcceptedLeadsList leads={serializeDecimal(leads) as LeadWithCompaniesNotesAndPriceRequests[]} />
     </div>
   );
 }

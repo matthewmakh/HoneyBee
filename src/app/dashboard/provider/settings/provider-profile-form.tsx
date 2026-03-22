@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
@@ -24,8 +24,8 @@ import {
 } from '@/components/ui';
 import type { ProviderProfileWithCompany, CommissionType } from '@/lib/types';
 import { saveProviderProfile } from './actions';
-import { UploadButton } from '@/lib/uploadthing';
-import { ImageIcon, X } from 'lucide-react';
+import { useUploadThing } from '@/lib/uploadthing';
+import { ImageIcon, X, Upload, Loader2, FileText } from 'lucide-react';
 
 interface ProviderProfileFormProps {
   profile: ProviderProfileWithCompany | null;
@@ -47,7 +47,36 @@ export function ProviderProfileForm({ profile, categories, currentLogoUrl }: Pro
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [logoIsPdf, setLogoIsPdf] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { startUpload } = useUploadThing('providerLogo', {
+    onClientUploadComplete: (res) => {
+      const file = res?.[0];
+      const url = file?.ufsUrl ?? file?.appUrl ?? file?.url;
+      if (url) {
+        setFormData((prev) => ({ ...prev, logoUrl: url }));
+        // Check if it's a PDF by file name or type
+        const isPdf = file?.name?.toLowerCase().endsWith('.pdf') || file?.type === 'application/pdf';
+        setLogoIsPdf(isPdf);
+        setError('');
+      }
+      setIsUploading(false);
+    },
+    onUploadError: (error) => {
+      setError(`Logo upload failed: ${error.message}`);
+      setIsUploading(false);
+    },
+  });
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+    setIsUploading(true);
+    setError('');
+    await startUpload(Array.from(files));
+  };
 
   const [formData, setFormData] = useState<FormData>({
     zipCode: profile?.zipCode ?? '',
@@ -71,7 +100,6 @@ export function ProviderProfileForm({ profile, categories, currentLogoUrl }: Pro
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setSuccess(false);
     setIsLoading(true);
 
     try {
@@ -87,8 +115,8 @@ export function ProviderProfileForm({ profile, categories, currentLogoUrl }: Pro
         return;
       }
 
-      setSuccess(true);
-      router.refresh();
+      // Redirect to provider dashboard with success message
+      router.push('/dashboard/provider?saved=true');
     } catch {
       setError('An error occurred. Please try again.');
     } finally {
@@ -113,11 +141,6 @@ export function ProviderProfileForm({ profile, categories, currentLogoUrl }: Pro
               {error}
             </div>
           )}
-          {success && (
-            <div className="bg-green-100 text-green-800 text-sm p-3 rounded-md">
-              Profile saved successfully!
-            </div>
-          )}
 
           {/* Logo Upload */}
           <div className="space-y-3">
@@ -125,45 +148,64 @@ export function ProviderProfileForm({ profile, categories, currentLogoUrl }: Pro
             <div className="flex items-center gap-4">
               <div className="h-20 w-20 rounded-lg border-2 border-dashed flex items-center justify-center overflow-hidden shrink-0 bg-muted/30">
                 {formData.logoUrl ? (
-                  <Image
-                    src={formData.logoUrl}
-                    alt="Company logo"
-                    width={80}
-                    height={80}
-                    className="h-full w-full object-cover rounded-lg"
-                  />
+                  logoIsPdf ? (
+                    <FileText className="h-10 w-10 text-primary" />
+                  ) : (
+                    <Image
+                      src={formData.logoUrl}
+                      alt="Company logo"
+                      width={80}
+                      height={80}
+                      className="h-full w-full object-cover rounded-lg"
+                    />
+                  )
                 ) : (
                   <ImageIcon className="h-8 w-8 text-muted-foreground" />
                 )}
               </div>
               <div className="flex-1 space-y-2">
-                <UploadButton
-                  endpoint="providerLogo"
-                  onClientUploadComplete={(res) => {
-                    const url = res?.[0]?.url;
-                    if (url) {
-                      setFormData((prev) => ({ ...prev, logoUrl: url }));
-                    }
-                  }}
-                  onUploadError={(error) => setError(`Logo upload failed: ${error.message}`)}
-                  appearance={{
-                    button: 'ut-ready:bg-primary ut-ready:text-primary-foreground text-sm h-9 px-4 rounded-md',
-                    allowedContent: 'text-xs text-muted-foreground',
-                  }}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg,application/pdf"
+                  onChange={handleFileSelect}
+                  className="hidden"
                 />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isUploading}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Choose File
+                    </>
+                  )}
+                </Button>
                 {formData.logoUrl && (
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     className="text-destructive hover:text-destructive h-7 px-2"
-                    onClick={() => setFormData((prev) => ({ ...prev, logoUrl: null }))}
+                    onClick={() => {
+                      setFormData((prev) => ({ ...prev, logoUrl: null }));
+                      setLogoIsPdf(false);
+                    }}
                   >
                     <X className="h-3 w-3 mr-1" />
-                    Remove logo
+                    Remove file
                   </Button>
                 )}
-                <p className="text-xs text-muted-foreground">PNG, JPG up to 4MB. Shown on your provider card.</p>
+                <p className="text-xs text-muted-foreground">PNG, JPG, or PDF up to 4MB.</p>
               </div>
             </div>
           </div>

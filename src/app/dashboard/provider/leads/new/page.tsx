@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getProviderLeads } from '@/lib/services/leads';
 import { NewLeadsList } from './new-leads-list';
+import { serializeDecimal } from '@/lib/utils';
 
 export default async function NewLeadsPage() {
   const session = await auth();
@@ -25,7 +26,7 @@ export default async function NewLeadsPage() {
         </p>
       </div>
 
-      <NewLeadsList leads={leads} />
+      <NewLeadsList leads={serializeDecimal(leads)} />
     </div>
   );
 }

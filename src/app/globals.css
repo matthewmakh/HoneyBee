@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* UploadThing button styles */
+.ut-button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+[data-ut-element="button"] {
+  position: relative;
+  cursor: pointer;
+}
+
+[data-ut-element="button"] input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
 @layer base {
   :root {
     --background: 210 20% 98%;

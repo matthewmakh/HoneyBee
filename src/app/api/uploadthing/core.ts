@@ -4,8 +4,11 @@ import { auth } from '@/lib/auth';
 const f = createUploadthing();
 
 export const ourFileRouter = {
-  // Provider logo upload (1 image, max 4MB)
-  providerLogo: f({ image: { maxFileSize: '4MB', maxFileCount: 1 } })
+  // Provider logo upload (1 image or PDF, max 4MB)
+  providerLogo: f({
+    image: { maxFileSize: '4MB', maxFileCount: 1 },
+    pdf: { maxFileSize: '4MB', maxFileCount: 1 },
+  })
     .middleware(async () => {
       const session = await auth();
       if (!session?.user) throw new Error('Unauthorized');
@@ -15,8 +18,11 @@ export const ourFileRouter = {
       return { url: file.ufsUrl };
     }),
 
-  // Lead photos upload (up to 5 images, max 8MB each)
-  leadPhotos: f({ image: { maxFileSize: '8MB', maxFileCount: 5 } })
+  // Lead photos/documents upload (up to 5 files, max 8MB each)
+  leadPhotos: f({
+    image: { maxFileSize: '8MB', maxFileCount: 5 },
+    pdf: { maxFileSize: '8MB', maxFileCount: 5 },
+  })
     .middleware(async () => {
       const session = await auth();
       if (!session?.user) throw new Error('Unauthorized');

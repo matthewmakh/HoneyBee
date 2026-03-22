@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
@@ -20,8 +20,8 @@ import {
   SelectValue,
 } from '@/components/ui';
 import { submitLead } from './actions';
-import { UploadButton } from '@/lib/uploadthing';
-import { X, ImageIcon } from 'lucide-react';
+import { useUploadThing } from '@/lib/uploadthing';
+import { X, ImageIcon, Upload, Loader2, FileText } from 'lucide-react';
 
 interface SubmitLeadFormProps {
   providerCompanyId: string;
@@ -32,7 +32,34 @@ export function SubmitLeadForm({ providerCompanyId, categories }: SubmitLeadForm
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [photos, setPhotos] = useState<string[]>([]);
+  const [photos, setPhotos] = useState<{ url: string; isPdf: boolean }[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { startUpload } = useUploadThing('leadPhotos', {
+    onClientUploadComplete: (res) => {
+      const newFiles = res.map((f) => ({
+        url: f.ufsUrl ?? f.appUrl ?? f.url,
+        isPdf: f.name?.toLowerCase().endsWith('.pdf') || f.type === 'application/pdf',
+      }));
+      setPhotos((prev) => [...prev, ...newFiles].slice(0, 5));
+      setIsUploading(false);
+    },
+    onUploadError: (err) => {
+      setError(`Photo upload failed: ${err.message}`);
+      setIsUploading(false);
+    },
+  });
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files?.length) return;
+    setIsUploading(true);
+    setError('');
+    await startUpload(Array.from(files));
+    // Reset input so same file can be selected again
+    e.target.value = '';
+  };
 
   const [formData, setFormData] = useState({
     homeownerName: '',
@@ -51,7 +78,7 @@ export function SubmitLeadForm({ providerCompanyId, categories }: SubmitLeadForm
       const result = await submitLead({
         ...formData,
         providerCompanyId,
-        photos,
+        photos: photos.map((p) => p.url),
       });
 
       if (!result.success) {
@@ -68,7 +95,7 @@ export function SubmitLeadForm({ providerCompanyId, categories }: SubmitLeadForm
   };
 
   const removePhoto = (url: string) => {
-    setPhotos((prev) => prev.filter((p) => p !== url));
+    setPhotos((prev) => prev.filter((p) => p.url !== url));
   };
 
   return (
@@ -163,17 +190,23 @@ export function SubmitLeadForm({ providerCompanyId, categories }: SubmitLeadForm
 
             {photos.length > 0 && (
               <div className="grid grid-cols-3 gap-2">
-                {photos.map((url) => (
-                  <div key={url} className="relative group aspect-square rounded-md overflow-hidden border">
-                    <Image
-                      src={url}
-                      alt="Job photo"
-                      fill
-                      className="object-cover"
-                    />
+                {photos.map((photo) => (
+                  <div key={photo.url} className="relative group aspect-square rounded-md overflow-hidden border">
+                    {photo.isPdf ? (
+                      <div className="h-full w-full flex items-center justify-center bg-muted">
+                        <FileText className="h-8 w-8 text-primary" />
+                      </div>
+                    ) : (
+                      <Image
+                        src={photo.url}
+                        alt="Job photo"
+                        fill
+                        className="object-cover"
+                      />
+                    )}
                     <button
                       type="button"
-                      onClick={() => removePhoto(url)}
+                      onClick={() => removePhoto(photo.url)}
                       className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <X className="h-3 w-3 text-white" />
@@ -187,18 +220,34 @@ export function SubmitLeadForm({ providerCompanyId, categories }: SubmitLeadForm
               <div className="rounded-md border-2 border-dashed p-4 text-center">
                 <ImageIcon className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
                 <p className="text-xs text-muted-foreground mb-2">Upload photos of the job site</p>
-                <UploadButton
-                  endpoint="leadPhotos"
-                  onClientUploadComplete={(res) => {
-                    const urls = res.map((f) => f.url);
-                    setPhotos((prev) => [...prev, ...urls].slice(0, 5));
-                  }}
-                  onUploadError={(err) => setError(`Photo upload failed: ${err.message}`)}
-                  appearance={{
-                    button: 'ut-ready:bg-secondary ut-ready:text-secondary-foreground text-sm h-8 px-3 rounded-md',
-                    allowedContent: 'text-xs text-muted-foreground',
-                  }}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/jpg,application/pdf"
+                  multiple
+                  onChange={handleFileSelect}
+                  className="hidden"
                 />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  disabled={isUploading}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Choose Files
+                    </>
+                  )}
+                </Button>
+                <p className="text-xs text-muted-foreground mt-2">Image and pdfs</p>
               </div>
             )}
 

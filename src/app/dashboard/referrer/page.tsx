@@ -1,10 +1,10 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { getReferrerDashboardStats } from '@/lib/services/leads';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button } from '@/components/ui';
-import { formatCurrency } from '@/lib/utils';
-import { ArrowRight, DollarSign, Gift, Send, CheckCircle, Clock } from 'lucide-react';
+import { getReferrerDashboardStats, getReferrerJobHistoryStats } from '@/lib/services/leads';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
+import { formatCurrency, formatDate } from '@/lib/utils';
+import { ArrowRight, DollarSign, Gift, Send, CheckCircle, Clock, TrendingUp, Trophy, Star, Target, Calendar } from 'lucide-react';
 
 export default async function ReferrerDashboardPage() {
   const session = await auth();
@@ -17,7 +17,10 @@ export default async function ReferrerDashboardPage() {
     redirect('/dashboard');
   }
 
-  const stats = await getReferrerDashboardStats(session.user.companyId);
+  const [stats, jobHistory] = await Promise.all([
+    getReferrerDashboardStats(session.user.companyId),
+    getReferrerJobHistoryStats(session.user.companyId),
+  ]);
 
   return (
     <div className="space-y-8">
@@ -36,28 +39,86 @@ export default async function ReferrerDashboardPage() {
         </Link>
       </div>
 
-      {/* Balance Cards */}
+      {/* Balance Cards - Available */}
+      <div>
+        <h2 className="text-lg font-semibold mb-3">Available Balance</h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card className="border-green-200 bg-green-50/50 dark:bg-green-950/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Cash Balance</CardTitle>
+              <DollarSign className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-700 dark:text-green-400">
+                {formatCurrency(stats.cashBalance)}
+              </div>
+              <p className="text-xs text-muted-foreground">Available for withdrawal</p>
+            </CardContent>
+          </Card>
+          <Card className="border-green-200 bg-green-50/50 dark:bg-green-950/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Benefits Balance</CardTitle>
+              <Gift className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-700 dark:text-green-400">
+                {formatCurrency(stats.benefitsBalance)}
+              </div>
+              <p className="text-xs text-muted-foreground">Use in Benefits Marketplace</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Pending Earnings - Greyed out */}
+      {(stats.pendingCashEarnings > 0 || stats.pendingBenefitsEarnings > 0) && (
+        <div>
+          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <Clock className="h-4 w-4" />
+            Pending Earnings
+            <span className="text-xs font-normal text-muted-foreground">
+              (from accepted leads - updates when job prices change)
+            </span>
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="border-dashed opacity-60">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Pending Cash
+                </CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-muted-foreground">
+                  {formatCurrency(stats.pendingCashEarnings)}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Estimated from {stats.acceptedReferrals - stats.completedReferrals} active leads
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="border-dashed opacity-60">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Pending Benefits
+                </CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-muted-foreground">
+                  {formatCurrency(stats.pendingBenefitsEarnings)}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Released when jobs are completed &amp; confirmed
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {/* Referral Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Cash Balance</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.cashBalance)}</div>
-            <p className="text-xs text-muted-foreground">Available for withdrawal</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Benefits Balance</CardTitle>
-            <Gift className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.benefitsBalance)}</div>
-            <p className="text-xs text-muted-foreground">Use in Benefits Marketplace</p>
-          </CardContent>
-        </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Referrals</CardTitle>
@@ -65,17 +126,39 @@ export default async function ReferrerDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalReferrals}</div>
-            <p className="text-xs text-muted-foreground">{stats.pendingReferrals} pending</p>
+            <p className="text-xs text-muted-foreground">{stats.pendingReferrals} pending review</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Accepted</CardTitle>
+            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.acceptedReferrals}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.acceptedReferrals - stats.completedReferrals} in progress
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
+            <CheckCircle className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.completedReferrals}</div>
-            <p className="text-xs text-muted-foreground">{stats.acceptedReferrals} accepted</p>
+            <p className="text-xs text-muted-foreground">Commission paid</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.pendingReferrals}</div>
+            <p className="text-xs text-muted-foreground">Awaiting provider response</p>
           </CardContent>
         </Card>
       </div>
@@ -115,6 +198,114 @@ export default async function ReferrerDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Lifetime Earnings Section */}
+      {jobHistory.totalJobsCompleted > 0 && (
+        <div>
+          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-yellow-500" />
+            Your Earnings Milestones
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20 border-yellow-200">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Lifetime Earnings</CardTitle>
+                <Trophy className="h-4 w-4 text-yellow-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-yellow-700 dark:text-yellow-400">
+                  {formatCurrency(jobHistory.lifetimeTotalEarnings)}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {formatCurrency(jobHistory.lifetimeCashEarnings)} cash + {formatCurrency(jobHistory.lifetimeBenefitsEarnings)} benefits
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">This Month</CardTitle>
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(jobHistory.monthTotalEarnings)}</div>
+                <p className="text-xs text-muted-foreground">
+                  {jobHistory.thisMonthJobsCompleted} jobs completed
+                </p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Best Job</CardTitle>
+                <Star className="h-4 w-4 text-yellow-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(jobHistory.highestSingleJobEarning)}</div>
+                <p className="text-xs text-muted-foreground">Highest single earning</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Average Earned</CardTitle>
+                <Target className="h-4 w-4 text-blue-500" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{formatCurrency(jobHistory.averageJobEarning)}</div>
+                <p className="text-xs text-muted-foreground">Per completed job</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {/* Recent Completed Jobs */}
+      {jobHistory.recentCompletedJobs.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-500" />
+              Recent Completed Jobs
+            </CardTitle>
+            <CardDescription>
+              Your most recent successful referrals
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Provider</TableHead>
+                  <TableHead>Homeowner</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead className="text-right">Job Value</TableHead>
+                  <TableHead className="text-right">Your Earnings</TableHead>
+                  <TableHead>Completed</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {jobHistory.recentCompletedJobs.map((job) => (
+                  <TableRow key={job.id}>
+                    <TableCell className="font-medium">{job.providerName}</TableCell>
+                    <TableCell>{job.homeownerName}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{job.category}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">{formatCurrency(job.jobValue)}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="font-medium text-green-600">{formatCurrency(job.commission)}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {formatCurrency(job.cashPortion)} cash + {formatCurrency(job.benefitsPortion)} benefits
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {formatDate(job.completedAt)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

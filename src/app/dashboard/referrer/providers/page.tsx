@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { searchProviders, getActiveServiceCategories } from '@/lib/services/providers';
 import { ProviderDirectory } from './provider-directory';
+import { serializeDecimal } from '@/lib/utils';
 
 interface PageProps {
   searchParams: Promise<{
@@ -48,7 +49,7 @@ export default async function ProvidersPage({ searchParams }: PageProps) {
       </div>
 
       <ProviderDirectory
-        providers={providers}
+        providers={serializeDecimal(providers)}
         categories={categories}
         currentFilters={{
           category: params.category,

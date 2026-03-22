@@ -204,6 +204,7 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
     companyStats,
     pendingApplicationsCount,
     pendingWithdrawalsCount,
+    pendingPriceChangesCount,
   ] = await Promise.all([
     getTotalPlatformProfit(),
     prisma.lead.count({
@@ -217,6 +218,7 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
     }),
     prisma.company.count({ where: { providerApplicationPending: true } }),
     prisma.withdrawalRequest.count({ where: { status: 'PENDING' } }),
+    prisma.priceChangeRequest.count({ where: { status: 'PENDING' } }),
   ]);
 
   const [activeCount, suspendedCount] = await Promise.all([
@@ -227,6 +229,7 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
   return {
     totalPlatformProfit: platformProfit,
     pendingConfirmationsCount: pendingCount,
+    pendingPriceChangesCount,
     completedDealsCount: completedCount,
     totalCompanies: companyStats._count,
     activeCompanies: activeCount,

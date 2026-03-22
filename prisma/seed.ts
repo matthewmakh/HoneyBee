@@ -89,7 +89,7 @@ async function main() {
     data: {
       name: 'Cool Air HVAC Services',
       memberId: 'HB-000003',
-      canUseReferrerPortal: false,
+      canUseReferrerPortal: true, // Providers automatically get referrer access
       canUseProviderPortal: true,
     },
   });
@@ -120,7 +120,7 @@ async function main() {
     data: {
       name: 'FastFlow Plumbing',
       memberId: 'HB-000004',
-      canUseReferrerPortal: false,
+      canUseReferrerPortal: true, // Providers automatically get referrer access
       canUseProviderPortal: true,
     },
   });
@@ -151,7 +151,7 @@ async function main() {
     data: {
       name: 'Bright Spark Electric',
       memberId: 'HB-000005',
-      canUseReferrerPortal: false,
+      canUseReferrerPortal: true, // Providers automatically get referrer access
       canUseProviderPortal: true,
     },
   });

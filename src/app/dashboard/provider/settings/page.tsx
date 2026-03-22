@@ -4,6 +4,7 @@ import { getProviderProfile } from '@/lib/services/providers';
 import { getCompanyWithProfile } from '@/lib/services/companies';
 import { ProviderProfileForm } from './provider-profile-form';
 import { SERVICE_CATEGORIES } from '@/lib/types';
+import { serializeDecimal } from '@/lib/utils';
 
 export default async function ProviderSettingsPage() {
   const session = await auth();
@@ -31,7 +32,7 @@ export default async function ProviderSettingsPage() {
       </div>
 
       <ProviderProfileForm
-        profile={profile}
+        profile={serializeDecimal(profile)}
         categories={SERVICE_CATEGORIES as unknown as string[]}
         currentLogoUrl={company?.logoUrl ?? null}
       />

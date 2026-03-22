@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getLeadsAwaitingConfirmation } from '@/lib/services/leads';
 import { PendingDealsList } from './pending-deals-list';
+import { serializeDecimal } from '@/lib/utils';
 
 export default async function PendingDealsPage() {
   const session = await auth();
@@ -21,7 +22,7 @@ export default async function PendingDealsPage() {
         </p>
       </div>
 
-      <PendingDealsList leads={leads} />
+      <PendingDealsList leads={serializeDecimal(leads)} />
     </div>
   );
 }

@@ -21,21 +21,30 @@ import {
   DialogTitle,
 } from '@/components/ui';
 import { formatDate, formatCurrency } from '@/lib/utils';
-import type { LeadWithCompanies } from '@/lib/types';
+import type { LeadWithCompaniesNotesAndPriceRequests } from '@/lib/types';
 import { markJobCompletedAction } from './actions';
-import { CheckCircle, Phone, MapPin, User, DollarSign } from 'lucide-react';
+import { LeadNotes } from './lead-notes';
+import { PriceChangeRequestButton } from './price-change-request';
+import { CheckCircle, Phone, MapPin, User, DollarSign, TrendingUp } from 'lucide-react';
 
 interface AcceptedLeadsListProps {
-  leads: LeadWithCompanies[];
+  leads: LeadWithCompaniesNotesAndPriceRequests[];
 }
 
 export function AcceptedLeadsList({ leads }: AcceptedLeadsListProps) {
   const router = useRouter();
   const [processingId, setProcessingId] = useState<string | null>(null);
-  const [selectedLead, setSelectedLead] = useState<LeadWithCompanies | null>(null);
+  const [selectedLead, setSelectedLead] = useState<LeadWithCompaniesNotesAndPriceRequests | null>(null);
   const [jobValue, setJobValue] = useState('');
   const [error, setError] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  const calculateCommission = (jobValue: number, commissionType: string, commissionValue: number) => {
+    if (commissionType === 'PERCENT') {
+      return jobValue * (commissionValue / 100);
+    }
+    return commissionValue;
+  };
 
   const handleMarkCompleted = async () => {
     if (!selectedLead) return;
@@ -63,9 +72,10 @@ export function AcceptedLeadsList({ leads }: AcceptedLeadsListProps) {
     setProcessingId(null);
   };
 
-  const openDialog = (lead: LeadWithCompanies) => {
+  const openDialog = (lead: LeadWithCompaniesNotesAndPriceRequests) => {
     setSelectedLead(lead);
-    setJobValue('');
+    // Pre-fill with estimated job value if available
+    setJobValue(lead.estimatedJobValue ? String(Number(lead.estimatedJobValue)) : '');
     setError('');
     setDialogOpen(true);
   };
@@ -83,61 +93,97 @@ export function AcceptedLeadsList({ leads }: AcceptedLeadsListProps) {
   return (
     <>
       <div className="space-y-4">
-        {leads.map((lead) => (
-          <Card key={lead.id}>
-            <CardHeader>
-              <div className="flex items-start justify-between">
+        {leads.map((lead) => {
+          const estimatedValue = lead.estimatedJobValue ? Number(lead.estimatedJobValue) : 0;
+          const commissionValue = Number(lead.commissionValueSnapshot);
+          const estimatedCommission = calculateCommission(estimatedValue, lead.commissionTypeSnapshot, commissionValue);
+          const latestPriceRequest = lead.priceChangeRequests?.[0] ?? null;
+
+          return (
+            <Card key={lead.id}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-lg">{lead.homeownerName}</CardTitle>
+                    <CardDescription>
+                      Referred by {lead.referrerCompany.name} ({lead.referrerCompany.memberId})
+                    </CardDescription>
+                  </div>
+                  <Badge variant="secondary">{lead.category}</Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="flex items-start gap-2">
+                    <Phone className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Phone</p>
+                      <p className="text-sm text-muted-foreground">{lead.homeownerPhone}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Address</p>
+                      <p className="text-sm text-muted-foreground">{lead.homeownerAddress}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Job Value & Commission Info */}
+                <div className="rounded-lg bg-muted/50 p-3 grid gap-3 sm:grid-cols-2">
+                  <div className="flex items-start gap-2">
+                    <DollarSign className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Estimated Job Value</p>
+                      <p className="text-lg font-semibold">{formatCurrency(estimatedValue)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-2">
+                    <TrendingUp className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Estimated Commission</p>
+                      <p className="text-lg font-semibold text-primary">{formatCurrency(estimatedCommission)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {lead.commissionTypeSnapshot === 'PERCENT'
+                          ? `${commissionValue}% of job value`
+                          : 'Flat rate'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 <div>
-                  <CardTitle className="text-lg">{lead.homeownerName}</CardTitle>
-                  <CardDescription>
-                    Referred by {lead.referrerCompany.name} ({lead.referrerCompany.memberId})
-                  </CardDescription>
+                  <p className="text-sm font-medium mb-1">Project Description</p>
+                  <p className="text-sm text-muted-foreground">{lead.projectDescription}</p>
                 </div>
-                <Badge variant="secondary">{lead.category}</Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="flex items-start gap-2">
-                  <Phone className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Phone</p>
-                    <p className="text-sm text-muted-foreground">{lead.homeownerPhone}</p>
+
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <User className="h-3 w-3" />
+                    Accepted on {formatDate(lead.updatedAt)}
                   </div>
                 </div>
-                <div className="flex items-start gap-2">
-                  <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm font-medium">Address</p>
-                    <p className="text-sm text-muted-foreground">{lead.homeownerAddress}</p>
-                  </div>
+              </CardContent>
+              <CardFooter className="flex flex-wrap justify-between gap-2">
+                <div className="flex flex-wrap gap-2">
+                  <LeadNotes leadId={lead.id} initialNotes={lead.notes} />
+                  <PriceChangeRequestButton
+                    leadId={lead.id}
+                    currentPrice={estimatedValue}
+                    commissionType={lead.commissionTypeSnapshot}
+                    commissionValue={commissionValue}
+                    existingRequest={latestPriceRequest}
+                  />
                 </div>
-              </div>
-              <div>
-                <p className="text-sm font-medium mb-1">Project Description</p>
-                <p className="text-sm text-muted-foreground">{lead.projectDescription}</p>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <User className="h-3 w-3" />
-                  Accepted on {formatDate(lead.updatedAt)}
-                </div>
-                <div className="text-muted-foreground">
-                  Commission:{' '}
-                  {lead.commissionTypeSnapshot === 'PERCENT'
-                    ? `${Number(lead.commissionValueSnapshot)}% of job value`
-                    : formatCurrency(Number(lead.commissionValueSnapshot))}
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-end">
-              <Button onClick={() => openDialog(lead)}>
-                <CheckCircle className="mr-2 h-4 w-4" />
-                Mark Job Completed
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+                <Button onClick={() => openDialog(lead)}>
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Mark Job Completed
+                </Button>
+              </CardFooter>
+            </Card>
+          );
+        })}
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -153,6 +199,11 @@ export function AcceptedLeadsList({ leads }: AcceptedLeadsListProps) {
               <div className="rounded-lg bg-muted p-4">
                 <p className="font-medium">{selectedLead.homeownerName}</p>
                 <p className="text-sm text-muted-foreground">{selectedLead.category}</p>
+                {selectedLead.estimatedJobValue && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Estimated: {formatCurrency(Number(selectedLead.estimatedJobValue))}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="jobValue">Final Job Value</Label>
