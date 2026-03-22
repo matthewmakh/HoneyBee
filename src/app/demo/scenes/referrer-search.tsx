@@ -42,16 +42,23 @@ export function ReferrerSearch({ step }: ReferrerSearchProps) {
           <h2 className="text-xl font-bold">Provider Directory</h2>
         </div>
 
-        <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            className={`pl-9 ${step >= 1 ? 'animate-demo-pulse-ring ring-2 ring-yellow-400' : ''}`}
-            value={displayText}
-            placeholder="Search providers..."
-            readOnly
-          />
-          {cursor && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-foreground animate-pulse" />
+        <div className="flex items-center gap-3 mb-6">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              className={`pl-9 ${step >= 1 ? 'animate-demo-pulse-ring ring-2 ring-yellow-400' : ''}`}
+              value={displayText}
+              placeholder="Search providers..."
+              readOnly
+            />
+            {cursor && (
+              <span className="absolute top-1/2 -translate-y-1/2 w-0.5 h-5 bg-foreground animate-pulse" style={{ left: `calc(2.25rem + ${displayText.length}ch)` }} />
+            )}
+          </div>
+          {step >= 1 && step < 2 && (
+            <AnnotationBubble visible inline>
+              Type to search providers
+            </AnnotationBubble>
           )}
         </div>
 
@@ -93,10 +100,13 @@ export function ReferrerSearch({ step }: ReferrerSearchProps) {
             </Card>
           ))}
 
-          {step >= 2 && (
-            <AnnotationBubble position="bottom" visible>
-              Referrers browse and search for service providers
-            </AnnotationBubble>
+          {step >= 2 && filtered.length === 1 && (
+            <div className="flex items-center gap-3 mt-2">
+              <div className="flex-1" />
+              <AnnotationBubble visible inline>
+                Found the right provider!
+              </AnnotationBubble>
+            </div>
           )}
         </div>
       </div>

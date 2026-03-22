@@ -29,47 +29,66 @@ export function AdminDistributed({ step }: AdminDistributedProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               {step >= 1 && (
-                <div className="flex items-center justify-between p-4 bg-emerald-50 rounded-lg border border-emerald-200 animate-demo-count-up">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">💵</span>
-                    <div>
-                      <div className="font-semibold text-emerald-800">Cash to Referrer</div>
-                      <div className="text-xs text-emerald-600">50% of commission</div>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 flex items-center justify-between p-4 bg-emerald-50 rounded-lg border border-emerald-200 animate-demo-count-up">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">💵</span>
+                      <div>
+                        <div className="font-semibold text-emerald-800">Cash to Referrer</div>
+                        <div className="text-xs text-emerald-600">50% of commission</div>
+                      </div>
+                    </div>
+                    <div className="text-xl font-bold text-emerald-700">
+                      {formatMoney(cashCount)}
                     </div>
                   </div>
-                  <div className="text-xl font-bold text-emerald-700">
-                    {formatMoney(cashCount)}
-                  </div>
+                  {step === 1 && (
+                    <AnnotationBubble visible inline>
+                      Cash payout
+                    </AnnotationBubble>
+                  )}
                 </div>
               )}
 
               {step >= 2 && (
-                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200 animate-demo-count-up">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">🎁</span>
-                    <div>
-                      <div className="font-semibold text-blue-800">Benefits to Referrer</div>
-                      <div className="text-xs text-blue-600">40% of commission</div>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200 animate-demo-count-up">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">🎁</span>
+                      <div>
+                        <div className="font-semibold text-blue-800">Benefits to Referrer</div>
+                        <div className="text-xs text-blue-600">40% of commission</div>
+                      </div>
+                    </div>
+                    <div className="text-xl font-bold text-blue-700">
+                      {formatMoney(benefitsCount)}
                     </div>
                   </div>
-                  <div className="text-xl font-bold text-blue-700">
-                    {formatMoney(benefitsCount)}
-                  </div>
+                  {step === 2 && (
+                    <AnnotationBubble visible inline>
+                      Benefits credits
+                    </AnnotationBubble>
+                  )}
                 </div>
               )}
 
               {step >= 3 && (
-                <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-200 animate-demo-count-up">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">🏢</span>
-                    <div>
-                      <div className="font-semibold text-purple-800">Platform Revenue</div>
-                      <div className="text-xs text-purple-600">10% of commission</div>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-200 animate-demo-count-up">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">🏢</span>
+                      <div>
+                        <div className="font-semibold text-purple-800">Platform Revenue</div>
+                        <div className="text-xs text-purple-600">10% of commission</div>
+                      </div>
+                    </div>
+                    <div className="text-xl font-bold text-purple-700">
+                      {formatMoney(platformCount)}
                     </div>
                   </div>
-                  <div className="text-xl font-bold text-purple-700">
-                    {formatMoney(platformCount)}
-                  </div>
+                  <AnnotationBubble visible inline>
+                    Auto-split complete!
+                  </AnnotationBubble>
                 </div>
               )}
 
@@ -80,12 +99,6 @@ export function AdminDistributed({ step }: AdminDistributedProps) {
               )}
             </CardContent>
           </Card>
-
-          {step >= 2 && (
-            <AnnotationBubble position="bottom" visible>
-              Commissions are automatically split and distributed
-            </AnnotationBubble>
-          )}
         </div>
       </div>
     </div>

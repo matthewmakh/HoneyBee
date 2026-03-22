@@ -56,17 +56,24 @@ export function ProviderComplete({ step }: ProviderCompleteProps) {
               <CardContent className="space-y-4">
                 <div>
                   <Label>Final Job Value</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                      $
-                    </span>
-                    <Input
-                      value={finalValue.displayText}
-                      readOnly
-                      className={`pl-7 ${step === 1 ? 'ring-2 ring-yellow-400 animate-demo-pulse-ring' : ''}`}
-                    />
-                    {finalValue.cursor && step === 1 && (
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-foreground animate-pulse" />
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        $
+                      </span>
+                      <Input
+                        value={finalValue.displayText}
+                        readOnly
+                        className={`pl-7 ${step === 1 ? 'ring-2 ring-yellow-400 animate-demo-pulse-ring' : ''}`}
+                      />
+                      {finalValue.cursor && step === 1 && (
+                        <span className="absolute top-1/2 -translate-y-1/2 w-0.5 h-5 bg-foreground animate-pulse" style={{ left: `calc(1.75rem + ${finalValue.displayText.length}ch)` }} />
+                      )}
+                    </div>
+                    {step === 1 && (
+                      <AnnotationBubble visible inline>
+                        Enter final job value
+                      </AnnotationBubble>
                     )}
                   </div>
                 </div>
@@ -80,17 +87,20 @@ export function ProviderComplete({ step }: ProviderCompleteProps) {
                   </div>
                 )}
 
-                <Button
-                  className={`w-full ${step === 2 ? 'animate-demo-scale-click' : ''}`}
-                >
-                  Confirm Completion
-                </Button>
+                <div className="flex items-center gap-3">
+                  <Button
+                    className={`flex-1 ${step === 2 ? 'animate-demo-scale-click' : ''}`}
+                  >
+                    Confirm Completion
+                  </Button>
+                  {step === 2 && (
+                    <AnnotationBubble visible inline>
+                      Confirm the completed job
+                    </AnnotationBubble>
+                  )}
+                </div>
               </CardContent>
             </Card>
-
-            <AnnotationBubble position="bottom" visible={step >= 1}>
-              After completing the job, provider reports the final value
-            </AnnotationBubble>
           </div>
         )}
 

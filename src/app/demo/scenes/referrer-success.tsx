@@ -23,8 +23,8 @@ export function ReferrerSuccess({ step }: ReferrerSuccessProps) {
         )}
 
         {step >= 1 && (
-          <div className="relative">
-            <Card className="max-w-md mx-auto animate-demo-scale-up">
+          <div className="flex items-start gap-3 justify-center">
+            <Card className="max-w-md animate-demo-scale-up">
               <CardContent className="pt-8 pb-8 text-center">
                 <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-foreground mb-2">
@@ -41,9 +41,11 @@ export function ReferrerSuccess({ step }: ReferrerSuccessProps) {
                 </p>
               </CardContent>
             </Card>
-            <AnnotationBubble position="bottom" visible>
-              The lead is now in the provider&apos;s queue
-            </AnnotationBubble>
+            <div className="pt-8">
+              <AnnotationBubble visible inline>
+                The lead is now in the provider&apos;s queue
+              </AnnotationBubble>
+            </div>
           </div>
         )}
       </div>

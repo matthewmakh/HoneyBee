@@ -52,7 +52,7 @@ export function AdminConfirm({ step }: AdminConfirmProps) {
                     <span className="text-sm font-medium">{MOCK.homeowner.name}</span>
                     <span className="text-sm text-muted-foreground ml-2">{MOCK.category}</span>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm">
                       Reject
                     </Button>
@@ -62,14 +62,15 @@ export function AdminConfirm({ step }: AdminConfirmProps) {
                     >
                       Confirm Deal
                     </Button>
+                    {step >= 1 && (
+                      <AnnotationBubble visible inline>
+                        Admin confirms the deal
+                      </AnnotationBubble>
+                    )}
                   </div>
                 </div>
               </CardContent>
             </Card>
-
-            <AnnotationBubble position="bottom" visible={step >= 1}>
-              Admin verifies and confirms completed deals
-            </AnnotationBubble>
           </div>
         ) : (
           <Card className="max-w-md mx-auto animate-demo-scale-up text-center">

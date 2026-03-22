@@ -20,9 +20,16 @@ export function ProviderNewLead({ step }: ProviderNewLeadProps) {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold">New Leads</h2>
           {step >= 1 && (
-            <Badge className="bg-red-100 text-red-800 border-red-200 animate-demo-scale-up">
-              1 New
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Badge className="bg-red-100 text-red-800 border-red-200 animate-demo-scale-up">
+                1 New
+              </Badge>
+              {step === 1 && (
+                <AnnotationBubble visible inline>
+                  New lead notification!
+                </AnnotationBubble>
+              )}
+            </div>
           )}
         </div>
 
@@ -72,9 +79,11 @@ export function ProviderNewLead({ step }: ProviderNewLeadProps) {
             </Card>
 
             {step >= 2 && (
-              <AnnotationBubble position="bottom" visible>
-                Providers receive referrals instantly
-              </AnnotationBubble>
+              <div className="flex items-center gap-3 mt-2 justify-end">
+                <AnnotationBubble visible inline>
+                  Providers receive referrals instantly
+                </AnnotationBubble>
+              </div>
             )}
           </div>
         )}

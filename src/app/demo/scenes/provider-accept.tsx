@@ -35,17 +35,24 @@ export function ProviderAccept({ step }: ProviderAcceptProps) {
               <CardContent className="space-y-4">
                 <div>
                   <Label>Estimated Job Value</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                      $
-                    </span>
-                    <Input
-                      value={jobValue.displayText}
-                      readOnly
-                      className={`pl-7 ${step === 1 ? 'ring-2 ring-yellow-400 animate-demo-pulse-ring' : ''}`}
-                    />
-                    {jobValue.cursor && step === 1 && (
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-foreground animate-pulse" />
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                        $
+                      </span>
+                      <Input
+                        value={jobValue.displayText}
+                        readOnly
+                        className={`pl-7 ${step === 1 ? 'ring-2 ring-yellow-400 animate-demo-pulse-ring' : ''}`}
+                      />
+                      {jobValue.cursor && step === 1 && (
+                        <span className="absolute top-1/2 -translate-y-1/2 w-0.5 h-5 bg-foreground animate-pulse" style={{ left: `calc(1.75rem + ${jobValue.displayText.length}ch)` }} />
+                      )}
+                    </div>
+                    {step === 1 && (
+                      <AnnotationBubble visible inline>
+                        Enter the estimated value
+                      </AnnotationBubble>
                     )}
                   </div>
                 </div>
@@ -59,17 +66,20 @@ export function ProviderAccept({ step }: ProviderAcceptProps) {
                   </div>
                 )}
 
-                <Button
-                  className={`w-full ${step === 2 ? 'animate-demo-scale-click' : ''}`}
-                >
-                  Accept Lead
-                </Button>
+                <div className="flex items-center gap-3">
+                  <Button
+                    className={`flex-1 ${step === 2 ? 'animate-demo-scale-click' : ''}`}
+                  >
+                    Accept Lead
+                  </Button>
+                  {step === 2 && (
+                    <AnnotationBubble visible inline>
+                      Accept with estimate!
+                    </AnnotationBubble>
+                  )}
+                </div>
               </CardContent>
             </Card>
-
-            <AnnotationBubble position="bottom" visible={step >= 1}>
-              Provider reviews details and accepts with an estimate
-            </AnnotationBubble>
           </div>
         ) : (
           <div className="relative">
