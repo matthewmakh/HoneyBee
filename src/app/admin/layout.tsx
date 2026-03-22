@@ -7,7 +7,6 @@ import {
   Button,
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -59,11 +58,11 @@ export default async function AdminLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-16 md:pb-0">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-6">
+        <div className="container mx-auto flex h-14 md:h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-4 md:gap-6">
             <Link href="/admin" className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-sm">HB</span>
@@ -106,24 +105,6 @@ export default async function AdminLayout({
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <div className="md:hidden">
-                {navItems.map((item) => (
-                  <DropdownMenuItem key={item.href} asChild>
-                    <Link href={item.href} className="gap-2 justify-between">
-                      <span className="flex items-center gap-2">
-                        <item.icon className="h-4 w-4" />
-                        {item.label}
-                      </span>
-                      {item.badge && (
-                        <span className="h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center">
-                          {item.badge}
-                        </span>
-                      )}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuSeparator />
-              </div>
               <SignOutButton
                 signOutAction={async () => {
                   'use server';
@@ -136,9 +117,30 @@ export default async function AdminLayout({
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-6 md:py-8">
         {children}
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t">
+        <div className="flex items-center justify-around h-16 px-1">
+          {navItems.map((item) => (
+            <Link 
+              key={item.href}
+              href={item.href} 
+              className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-muted-foreground hover:text-foreground transition-colors relative"
+            >
+              <item.icon className="h-5 w-5" />
+              <span className="text-[10px]">{item.label}</span>
+              {item.badge && (
+                <span className="absolute top-1 right-0 h-4 w-4 rounded-full bg-destructive text-destructive-foreground text-[9px] font-bold flex items-center justify-center">
+                  {item.badge}
+                </span>
+              )}
+            </Link>
+          ))}
+        </div>
+      </nav>
     </div>
   );
 }

@@ -8,7 +8,6 @@ import {
   Button,
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -18,7 +17,7 @@ import {
 } from '@/components/ui';
 import { SignOutButton } from '@/components/sign-out-button';
 import { getInitials } from '@/lib/utils';
-import { Wallet, Clock } from 'lucide-react';
+import { Wallet, Clock, Users, Briefcase, Send, Settings, Home } from 'lucide-react';
 
 export default async function DashboardLayout({
   children,
@@ -36,7 +35,7 @@ export default async function DashboardLayout({
   const showBothPortals = canUseReferrerPortal && canUseProviderPortal;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-16 md:pb-0">
       {/* Pending provider application banner */}
       {canUseReferrerPortal && providerApplicationPending && (
         <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-center">
@@ -49,8 +48,8 @@ export default async function DashboardLayout({
 
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-6">
+        <div className="container mx-auto flex h-14 md:h-16 items-center justify-between px-4">
+          <div className="flex items-center gap-4 md:gap-6">
             <Link href="/dashboard" className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-sm">HB</span>
@@ -58,7 +57,7 @@ export default async function DashboardLayout({
               <span className="font-semibold hidden sm:inline-block">Honeybee</span>
             </Link>
 
-            {/* Portal Tabs */}
+            {/* Portal Tabs - Desktop */}
             {showBothPortals && (
               <Tabs defaultValue="referrer" className="hidden md:block">
                 <TabsList>
@@ -72,7 +71,7 @@ export default async function DashboardLayout({
               </Tabs>
             )}
 
-            {/* Wallet link for referrers */}
+            {/* Wallet link for referrers - Desktop */}
             {canUseReferrerPortal && (
               <Link href="/dashboard/referrer/wallet" className="hidden md:block">
                 <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
@@ -83,7 +82,7 @@ export default async function DashboardLayout({
             )}
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <span className="text-sm text-muted-foreground hidden sm:inline-block">
               {user.company.name}
               <span className="ml-1 text-xs">({user.company.memberId})</span>
@@ -105,28 +104,12 @@ export default async function DashboardLayout({
                     <p className="text-xs leading-none text-muted-foreground">
                       {user.email}
                     </p>
+                    <p className="text-xs leading-none text-muted-foreground md:hidden">
+                      {user.company.name} ({user.company.memberId})
+                    </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {showBothPortals && (
-                  <>
-                    <DropdownMenuItem asChild className="md:hidden">
-                      <Link href="/dashboard/referrer">Referrer Portal</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild className="md:hidden">
-                      <Link href="/dashboard/provider">Provider Portal</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator className="md:hidden" />
-                  </>
-                )}
-                {canUseReferrerPortal && (
-                  <DropdownMenuItem asChild className="md:hidden">
-                    <Link href="/dashboard/referrer/wallet" className="gap-2">
-                      <Wallet className="h-4 w-4" />
-                      Wallet
-                    </Link>
-                  </DropdownMenuItem>
-                )}
                 <SignOutButton
                   signOutAction={async () => {
                     'use server';
@@ -139,10 +122,74 @@ export default async function DashboardLayout({
         </div>
       </header>
 
+      {/* Mobile Portal Switcher - Shows when user has access to both portals */}
+      {showBothPortals && (
+        <div className="md:hidden sticky top-14 z-40 bg-background border-b">
+          <div className="container mx-auto px-4 py-2">
+            <div className="flex gap-2">
+              <Link href="/dashboard/referrer" className="flex-1">
+                <Button variant="outline" size="sm" className="w-full gap-2 text-xs">
+                  <Send className="h-3.5 w-3.5" />
+                  Referrer Portal
+                </Button>
+              </Link>
+              <Link href="/dashboard/provider" className="flex-1">
+                <Button variant="outline" size="sm" className="w-full gap-2 text-xs">
+                  <Briefcase className="h-3.5 w-3.5" />
+                  Provider Portal
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-6 md:py-8">
         {children}
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t">
+        <div className="flex items-center justify-around h-16 px-2">
+          <Link 
+            href="/dashboard" 
+            className="flex flex-col items-center justify-center gap-1 px-3 py-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Home className="h-5 w-5" />
+            <span className="text-xs">Home</span>
+          </Link>
+          
+          {canUseReferrerPortal && (
+            <>
+              <Link 
+                href="/dashboard/referrer/providers" 
+                className="flex flex-col items-center justify-center gap-1 px-3 py-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Users className="h-5 w-5" />
+                <span className="text-xs">Providers</span>
+              </Link>
+              <Link 
+                href="/dashboard/referrer/wallet" 
+                className="flex flex-col items-center justify-center gap-1 px-3 py-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Wallet className="h-5 w-5" />
+                <span className="text-xs">Wallet</span>
+              </Link>
+            </>
+          )}
+          
+          {canUseProviderPortal && (
+            <Link 
+              href="/dashboard/provider/settings" 
+              className="flex flex-col items-center justify-center gap-1 px-3 py-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Settings className="h-5 w-5" />
+              <span className="text-xs">Settings</span>
+            </Link>
+          )}
+        </div>
+      </nav>
     </div>
   );
 }
