@@ -17,7 +17,7 @@ import {
 import { formatDate, formatCurrency } from '@/lib/utils';
 import type { PriceChangeRequestWithLead } from '@/lib/types';
 import { approvePriceChangeAction, rejectPriceChangeAction } from './actions';
-import { Check, X, DollarSign, TrendingUp, TrendingDown, ArrowRight, Building2 } from 'lucide-react';
+import { Check, X, TrendingUp, TrendingDown, ArrowRight, Building2 } from 'lucide-react';
 
 interface PriceChangesListProps {
   requests: PriceChangeRequestWithLead[];

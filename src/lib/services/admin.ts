@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db';
-import type { Company, User, WalletTransaction, Lead, ProviderProfile, PriceChangeRequest } from '@prisma/client';
+import type { Company, User, WalletTransaction, Lead, ProviderProfile, Prisma, LeadStatus } from '@prisma/client';
 
 // ============================================================================
 // Types
@@ -220,7 +220,7 @@ export async function getAllCompaniesWithDetails(
 ): Promise<AdminCompanyView[]> {
   const { search, status = 'all', type = 'all', sortBy = 'createdAt', sortOrder = 'desc' } = options;
 
-  const where: Parameters<typeof prisma.company.findMany>[0]['where'] = {};
+  const where: Prisma.CompanyWhereInput = {};
 
   if (search) {
     where.OR = [
@@ -240,7 +240,7 @@ export async function getAllCompaniesWithDetails(
     where.canUseReferrerPortal = true;
   }
 
-  const orderBy: Parameters<typeof prisma.company.findMany>[0]['orderBy'] = {};
+  const orderBy: Prisma.CompanyOrderByWithRelationInput = {};
   if (sortBy === 'lastActive') {
     // Sort by most recent user activity
     orderBy.users = { _count: sortOrder };
@@ -334,7 +334,7 @@ export async function getAllUsers(
 ): Promise<AdminUserView[]> {
   const { search, companyId, role = 'all', sortBy = 'lastActiveAt', sortOrder = 'desc' } = options;
 
-  const where: Parameters<typeof prisma.user.findMany>[0]['where'] = {};
+  const where: Prisma.UserWhereInput = {};
 
   if (search) {
     where.OR = [
@@ -404,7 +404,7 @@ export async function getAllTransactions(
     offset = 0,
   } = options;
 
-  const where: Parameters<typeof prisma.walletTransaction.findMany>[0]['where'] = {};
+  const where: Prisma.WalletTransactionWhereInput = {};
 
   if (companyId) {
     where.companyId = companyId;
@@ -495,7 +495,7 @@ export async function getAllLeads(
     offset = 0,
   } = options;
 
-  const where: Parameters<typeof prisma.lead.findMany>[0]['where'] = {};
+  const where: Prisma.LeadWhereInput = {};
 
   if (search) {
     where.OR = [
@@ -507,7 +507,7 @@ export async function getAllLeads(
   }
 
   if (status && status !== 'all') {
-    where.status = status as any;
+    where.status = status as LeadStatus;
   }
 
   if (providerCompanyId) {

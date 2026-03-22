@@ -560,7 +560,7 @@ export async function approvePriceChangeRequest(
       where: { id: requestId },
       data: {
         status: 'APPROVED',
-        adminNotes,
+        adminNotes: adminNotes ?? null,
         resolvedAt: new Date(),
       },
     }),
@@ -597,7 +597,7 @@ export async function rejectPriceChangeRequest(
     where: { id: requestId },
     data: {
       status: 'REJECTED',
-      adminNotes,
+      adminNotes: adminNotes ?? null,
       resolvedAt: new Date(),
     },
   });

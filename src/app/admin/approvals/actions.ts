@@ -4,7 +4,7 @@ import { requireSuperAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import type { ApiResult } from '@/lib/types';
-import { processLeadCompletion, calculateCommission } from '@/lib/services/finance';
+import { processLeadCompletion } from '@/lib/services/finance';
 
 // Provider Application Actions
 export async function approveProviderApplicationAction(companyId: string): Promise<ApiResult<null>> {
@@ -83,7 +83,7 @@ export async function approvePriceChangeRequestAction(
         where: { id: requestId },
         data: {
           status: 'APPROVED',
-          adminNotes,
+          adminNotes: adminNotes ?? null,
           resolvedAt: new Date(),
         },
       });
@@ -109,7 +109,7 @@ export async function rejectPriceChangeRequestAction(
       where: { id: requestId },
       data: {
         status: 'REJECTED',
-        adminNotes,
+        adminNotes: adminNotes ?? null,
         resolvedAt: new Date(),
       },
     });

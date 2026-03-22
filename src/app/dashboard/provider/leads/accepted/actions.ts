@@ -100,7 +100,7 @@ export async function addLeadNoteAction(
         cashBalance: Number(note.authorCompany.cashBalance),
         benefitsBalance: Number(note.authorCompany.benefitsBalance),
       },
-    };
+    } as unknown as LeadNoteWithAuthor;
 
     return { success: true, data: serializedNote };
   } catch (error) {
@@ -151,7 +151,7 @@ export async function getLeadNotesAction(
         cashBalance: Number(note.authorCompany.cashBalance),
         benefitsBalance: Number(note.authorCompany.benefitsBalance),
       },
-    }));
+    })) as unknown as LeadNoteWithAuthor[];
 
     return { success: true, data: serializedNotes };
   } catch (error) {
