@@ -227,13 +227,6 @@ export function AccountsList({ companies }: AccountsListProps) {
     setIsProcessing(false);
   };
 
-  const getCompanyType = (company: Company): string => {
-    if (company.canUseProviderPortal && company.canUseReferrerPortal) return 'Both';
-    if (company.canUseProviderPortal) return 'Provider';
-    if (company.canUseReferrerPortal) return 'Referrer';
-    return 'None';
-  };
-
   const getLastActiveUser = (company: Company) => {
     const sortedUsers = [...company.users].sort((a, b) => {
       const aTime = a.lastActiveAt ? new Date(a.lastActiveAt).getTime() : 0;
