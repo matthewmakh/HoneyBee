@@ -29,9 +29,9 @@ export function AdminDistributed({ step }: AdminDistributedProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               {step >= 1 && (
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                   <div className="flex-1 flex items-center justify-between p-4 bg-emerald-50 rounded-lg border border-emerald-200 animate-demo-count-up">
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                       <span className="text-2xl">💵</span>
                       <div>
                         <div className="font-semibold text-emerald-800">Cash to Referrer</div>
@@ -51,9 +51,9 @@ export function AdminDistributed({ step }: AdminDistributedProps) {
               )}
 
               {step >= 2 && (
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                   <div className="flex-1 flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200 animate-demo-count-up">
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                       <span className="text-2xl">🎁</span>
                       <div>
                         <div className="font-semibold text-blue-800">Benefits to Referrer</div>
@@ -73,9 +73,9 @@ export function AdminDistributed({ step }: AdminDistributedProps) {
               )}
 
               {step >= 3 && (
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                   <div className="flex-1 flex items-center justify-between p-4 bg-purple-50 rounded-lg border border-purple-200 animate-demo-count-up">
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                       <span className="text-2xl">🏢</span>
                       <div>
                         <div className="font-semibold text-purple-800">Platform Revenue</div>

@@ -20,7 +20,7 @@ export function ProviderNewLead({ step }: ProviderNewLeadProps) {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold">New Leads</h2>
           {step >= 1 && (
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
               <Badge className="bg-red-100 text-red-800 border-red-200 animate-demo-scale-up">
                 1 New
               </Badge>

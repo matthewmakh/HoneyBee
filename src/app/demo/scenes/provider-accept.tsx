@@ -35,7 +35,7 @@ export function ProviderAccept({ step }: ProviderAcceptProps) {
               <CardContent className="space-y-4">
                 <div>
                   <Label>Estimated Job Value</Label>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                     <div className="flex-1 relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                         $
@@ -66,7 +66,7 @@ export function ProviderAccept({ step }: ProviderAcceptProps) {
                   </div>
                 )}
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                   <Button
                     className={`flex-1 ${step === 2 ? 'animate-demo-scale-click' : ''}`}
                   >

@@ -2,29 +2,43 @@
 
 import { Pause, Play, SkipForward } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import type { DemoSpeed } from '../use-demo-engine';
 
 interface DemoControlsProps {
   isPaused: boolean;
   currentScene: number;
   totalScenes: number;
+  speed: DemoSpeed;
   onPause: () => void;
   onResume: () => void;
   onSkip: () => void;
+  onCycleSpeed: () => void;
 }
 
 export function DemoControls({
   isPaused,
   currentScene,
   totalScenes,
+  speed,
   onPause,
   onResume,
   onSkip,
+  onCycleSpeed,
 }: DemoControlsProps) {
   return (
     <div className="absolute top-4 right-4 z-30 flex items-center gap-2">
       <span className="text-xs text-muted-foreground mr-1">
         {currentScene + 1}/{totalScenes}
       </span>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onCycleSpeed}
+        className="h-8 px-2 min-w-[3rem] font-mono"
+        title="Change playback speed"
+      >
+        <span className="text-xs">{speed}x</span>
+      </Button>
       <Button
         variant="outline"
         size="sm"

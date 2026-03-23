@@ -29,7 +29,7 @@ export function ReferrerForm({ step }: ReferrerFormProps) {
       <div className="bg-card rounded-b-lg border border-t-0 p-6">
         <Card className="mb-4 bg-muted/50">
           <CardContent className="p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
               <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">
                 T
               </div>
@@ -51,7 +51,7 @@ export function ReferrerForm({ step }: ReferrerFormProps) {
           <CardContent className="space-y-4">
             <div className="relative">
               <Label>Homeowner Name</Label>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                 <div className="flex-1 relative">
                   <Input
                     value={name.displayText}
@@ -72,7 +72,7 @@ export function ReferrerForm({ step }: ReferrerFormProps) {
 
             <div className="relative">
               <Label>Phone Number</Label>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                 <div className="flex-1 relative">
                   <Input
                     value={phone.displayText}
@@ -93,7 +93,7 @@ export function ReferrerForm({ step }: ReferrerFormProps) {
 
             <div className="relative">
               <Label>Address</Label>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                 <div className="flex-1 relative">
                   <Input
                     value={address.displayText}
@@ -114,7 +114,7 @@ export function ReferrerForm({ step }: ReferrerFormProps) {
 
             <div className="relative">
               <Label>Service Category</Label>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3">
                 <div
                   className={`flex-1 flex h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ${
                     activeField === 3 ? 'ring-2 ring-yellow-400 animate-demo-pulse-ring' : ''
@@ -136,7 +136,7 @@ export function ReferrerForm({ step }: ReferrerFormProps) {
 
             <div className="relative">
               <Label>Project Description</Label>
-              <div className="flex items-start gap-3">
+              <div className="flex flex-wrap sm:flex-nowrap items-start gap-2 sm:gap-3">
                 <div className="flex-1 relative">
                   <Textarea
                     value={desc.displayText}

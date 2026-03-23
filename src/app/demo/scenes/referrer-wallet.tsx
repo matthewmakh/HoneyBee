@@ -67,7 +67,7 @@ export function ReferrerWallet({ step }: ReferrerWalletProps) {
           </div>
 
           {step >= 1 && (
-            <div className="flex items-start gap-3">
+            <div className="flex flex-wrap sm:flex-nowrap items-start gap-2 sm:gap-3">
               <Card className="flex-1 animate-demo-slide-in-right">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base">Recent Transactions</CardTitle>

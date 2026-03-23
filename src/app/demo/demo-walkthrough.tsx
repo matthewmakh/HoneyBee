@@ -26,6 +26,7 @@ export function DemoWalkthrough() {
     resume,
     skip,
     restart,
+    cycleSpeed,
   } = useDemoEngine();
 
   const renderScene = () => {
@@ -67,9 +68,11 @@ export function DemoWalkthrough() {
         isPaused={state.isPaused}
         currentScene={state.sceneIndex}
         totalScenes={totalScenes}
+        speed={state.speed}
         onPause={pause}
         onResume={resume}
         onSkip={skip}
+        onCycleSpeed={cycleSpeed}
       />
 
       <div className="min-h-screen flex items-center justify-center pt-12 pb-20">

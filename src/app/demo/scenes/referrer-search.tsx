@@ -42,7 +42,7 @@ export function ReferrerSearch({ step }: ReferrerSearchProps) {
           <h2 className="text-xl font-bold">Provider Directory</h2>
         </div>
 
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 mb-6">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -101,7 +101,7 @@ export function ReferrerSearch({ step }: ReferrerSearchProps) {
           ))}
 
           {step >= 2 && filtered.length === 1 && (
-            <div className="flex items-center gap-3 mt-2">
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 mt-2">
               <div className="flex-1" />
               <AnnotationBubble visible inline>
                 Found the right provider!

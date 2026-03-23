@@ -52,7 +52,7 @@ export function AdminConfirm({ step }: AdminConfirmProps) {
                     <span className="text-sm font-medium">{MOCK.homeowner.name}</span>
                     <span className="text-sm text-muted-foreground ml-2">{MOCK.category}</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
                     <Button variant="outline" size="sm">
                       Reject
                     </Button>

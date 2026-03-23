@@ -17,12 +17,22 @@ export function AnnotationBubble({
 
   if (inline) {
     return (
-      <div className="shrink-0 animate-demo-spotlight">
-        <div className="relative bg-yellow-400 text-yellow-950 px-3 py-1.5 rounded-lg shadow-lg text-xs font-medium whitespace-nowrap">
-          <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-[5px] border-t-transparent border-b-transparent border-l-transparent border-r-yellow-400" />
-          {children}
+      <>
+        {/* Desktop: inline with left-pointing arrow */}
+        <div className="hidden sm:block shrink-0 animate-demo-spotlight">
+          <div className="relative bg-yellow-400 text-yellow-950 px-3 py-1.5 rounded-lg shadow-lg text-xs font-medium whitespace-nowrap">
+            <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-[5px] border-t-transparent border-b-transparent border-l-transparent border-r-yellow-400" />
+            {children}
+          </div>
         </div>
-      </div>
+        {/* Mobile: below with top-pointing arrow */}
+        <div className="sm:hidden w-full flex justify-center mt-2 animate-demo-spotlight">
+          <div className="relative bg-yellow-400 text-yellow-950 px-3 py-1.5 rounded-lg shadow-lg text-xs font-medium">
+            <div className="absolute left-1/2 -translate-x-1/2 bottom-full w-0 h-0 border-[5px] border-l-transparent border-r-transparent border-t-transparent border-b-yellow-400" />
+            {children}
+          </div>
+        </div>
+      </>
     );
   }
 

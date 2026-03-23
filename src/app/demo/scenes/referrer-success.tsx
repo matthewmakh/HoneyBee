@@ -23,7 +23,7 @@ export function ReferrerSuccess({ step }: ReferrerSuccessProps) {
         )}
 
         {step >= 1 && (
-          <div className="flex items-start gap-3 justify-center">
+          <div className="flex flex-wrap sm:flex-nowrap items-start gap-2 sm:gap-3 justify-center">
             <Card className="max-w-md animate-demo-scale-up">
               <CardContent className="pt-8 pb-8 text-center">
                 <CheckCircle className="h-16 w-16 text-emerald-500 mx-auto mb-4" />
