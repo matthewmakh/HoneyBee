@@ -13,6 +13,13 @@ import type {
   PriceChangeStatus,
   WalletTransactionType,
   WithdrawalStatus,
+  TeamRole,
+  PayoutLineType,
+  PayoutStatus,
+  CommissionPlan,
+  CommissionPlanLine,
+  PayoutLedger,
+  TeamMembership,
 } from '@prisma/client';
 
 // Re-export Prisma types
@@ -31,6 +38,13 @@ export type {
   PriceChangeStatus,
   WalletTransactionType,
   WithdrawalStatus,
+  TeamRole,
+  PayoutLineType,
+  PayoutStatus,
+  CommissionPlan,
+  CommissionPlanLine,
+  PayoutLedger,
+  TeamMembership,
 };
 
 // ============================================================================
@@ -52,6 +66,7 @@ export interface SessionUser {
     canUseProviderPortal: boolean;
     providerApplicationPending: boolean;
     isSuspended: boolean;
+    teamRole: TeamRole;
   };
 }
 
@@ -252,3 +267,101 @@ export const LEAD_STATUS_COLORS: Record<LeadStatus, string> = {
   AWAITING_ADMIN_CONFIRMATION: 'bg-purple-100 text-purple-800',
   COMPLETED_CONFIRMED: 'bg-green-100 text-green-800',
 };
+
+// ============================================================================
+// MLM / Team Types
+// ============================================================================
+
+export const TEAM_ROLE_LABELS: Record<TeamRole, string> = {
+  MEMBER: 'Bee Team Member',
+  L1_MANAGER: 'L-1 Manager',
+  L2_MANAGER: 'L-2 Manager',
+  L3_MANAGER: 'L-3 Manager',
+  CLUB_ADMIN: 'Club Admin',
+  PROVIDER: 'A-Team Provider',
+};
+
+export const PAYOUT_LINE_LABELS: Record<PayoutLineType, string> = {
+  DIRECT_REFERRER: 'Direct Referrer',
+  L1_MANAGER: 'L-1 Manager Override',
+  L2_MANAGER: 'L-2 Manager Override',
+  L3_MANAGER: 'L-3 Manager Override',
+  CLUB_ADMIN: 'Club Admin Fee',
+  ORIGINAL_SPONSOR_LIFETIME: 'Lifetime 1% Sponsor',
+  POOL_BONUS_1: 'Pool Bonus 1',
+  POOL_BONUS_2: 'Pool Bonus 2',
+  POOL_BONUS_3: 'Pool Bonus 3',
+  POOL_BONUS_4: 'Pool Bonus 4',
+  POOL_BONUS_5: 'Pool Bonus 5',
+  PROVIDER_FEE_OFFSET: 'Provider Fee / Platform',
+};
+
+/**
+ * Default 12-line commission plan (% of total commission, basis points).
+ * Admin can override in /admin/commission-plan.
+ * Sum MUST equal 10000 bps (100%).
+ */
+export const DEFAULT_COMMISSION_PLAN: Array<{
+  lineType: PayoutLineType;
+  label: string;
+  percentBps: number;
+}> = [
+  { lineType: 'DIRECT_REFERRER',           label: 'Direct Referrer',          percentBps: 4000 }, // 40%
+  { lineType: 'L1_MANAGER',                label: 'L-1 Manager Override',     percentBps: 1000 }, // 10%
+  { lineType: 'L2_MANAGER',                label: 'L-2 Manager Override',     percentBps: 500  }, // 5%
+  { lineType: 'L3_MANAGER',                label: 'L-3 Manager Override',     percentBps: 300  }, // 3%
+  { lineType: 'CLUB_ADMIN',                label: 'Club Admin Fee',           percentBps: 500  }, // 5%
+  { lineType: 'ORIGINAL_SPONSOR_LIFETIME', label: 'Lifetime 1% Sponsor',      percentBps: 100  }, // 1%
+  { lineType: 'POOL_BONUS_1',              label: 'Rank Pool',                percentBps: 300  }, // 3%
+  { lineType: 'POOL_BONUS_2',              label: 'Leadership Pool',          percentBps: 200  }, // 2%
+  { lineType: 'POOL_BONUS_3',              label: 'Customer Credit (Benefits)', percentBps: 1500 }, // 15%
+  { lineType: 'POOL_BONUS_4',              label: 'Growth Pool',              percentBps: 100  }, // 1%
+  { lineType: 'POOL_BONUS_5',              label: 'Events / Training',        percentBps: 100  }, // 1%
+  { lineType: 'PROVIDER_FEE_OFFSET',       label: 'Platform',                 percentBps: 1400 }, // 14%
+];
+
+export interface UplineSnapshot {
+  l1ManagerCompanyId: string | null;
+  l2ManagerCompanyId: string | null;
+  l3ManagerCompanyId: string | null;
+  clubAdminCompanyId: string | null;
+  originalSponsorCompanyId: string | null;
+}
+
+export interface TeamNode {
+  id: string;
+  name: string;
+  memberId: string;
+  teamRole: TeamRole;
+  directDownline: TeamNode[];
+}
+
+export interface PayoutLineRow {
+  id: string;
+  leadId: string;
+  lineType: PayoutLineType;
+  label: string;
+  beneficiaryCompanyId: string | null;
+  beneficiaryName: string | null;
+  amount: number;
+  status: PayoutStatus;
+  createdAt: Date;
+}
+
+/**
+ * UI color for a payout row: green = available, grey = pending,
+ * black = completed/paid.
+ */
+export function payoutStatusColor(
+  status: PayoutStatus
+): 'green' | 'grey' | 'black' {
+  switch (status) {
+    case 'AVAILABLE':
+      return 'green';
+    case 'PAID':
+      return 'black';
+    case 'PENDING_COMPLETION':
+    default:
+      return 'grey';
+  }
+}

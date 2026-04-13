@@ -41,6 +41,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 canUseProviderPortal: true,
                 providerApplicationPending: true,
                 isSuspended: true,
+                teamRole: true,
               },
             },
           },
@@ -158,10 +159,40 @@ export async function requireReferrerAccess(): Promise<SessionUser> {
  */
 export async function requireProviderAccess(): Promise<SessionUser> {
   const user = await getCurrentUser();
-  
+
   if (user.role !== 'SUPERADMIN' && !user.company.canUseProviderPortal) {
     throw new Error('Forbidden: Provider portal access required');
   }
 
+  return user;
+}
+
+/**
+ * Club Admin access (SUPERADMIN role OR CLUB_ADMIN team role).
+ */
+export async function requireClubAdmin(): Promise<SessionUser> {
+  const user = await getCurrentUser();
+  if (user.role !== 'SUPERADMIN' && user.company.teamRole !== 'CLUB_ADMIN') {
+    throw new Error('Forbidden: Club Admin access required');
+  }
+  return user;
+}
+
+const MANAGER_ROLES: Array<SessionUser['company']['teamRole']> = [
+  'L1_MANAGER',
+  'L2_MANAGER',
+  'L3_MANAGER',
+  'CLUB_ADMIN',
+];
+
+/**
+ * Any manager level or club admin (or super admin). Used for downline views.
+ */
+export async function requireManagerOrAbove(): Promise<SessionUser> {
+  const user = await getCurrentUser();
+  if (user.role === 'SUPERADMIN') return user;
+  if (!MANAGER_ROLES.includes(user.company.teamRole)) {
+    throw new Error('Forbidden: Manager access required');
+  }
   return user;
 }

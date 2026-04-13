@@ -36,6 +36,41 @@ enum WalletTransactionType {
   CASH
   BENEFITS
   PLATFORM_PROFIT
+  MANAGEMENT_OVERRIDE
+  CLUB_ADMIN_FEE
+  LIFETIME_SPONSOR
+  POOL_BONUS
+  PROVIDER_CHARGE
+}
+
+enum TeamRole {
+  MEMBER
+  L1_MANAGER
+  L2_MANAGER
+  L3_MANAGER
+  CLUB_ADMIN
+  PROVIDER
+}
+
+enum PayoutLineType {
+  DIRECT_REFERRER
+  L1_MANAGER
+  L2_MANAGER
+  L3_MANAGER
+  CLUB_ADMIN
+  ORIGINAL_SPONSOR_LIFETIME
+  POOL_BONUS_1
+  POOL_BONUS_2
+  POOL_BONUS_3
+  POOL_BONUS_4
+  POOL_BONUS_5
+  PROVIDER_FEE_OFFSET
+}
+
+enum PayoutStatus {
+  PENDING_COMPLETION
+  AVAILABLE
+  PAID
 }
 
 enum WithdrawalStatus {
@@ -55,32 +90,50 @@ enum PriceChangeStatus {
 // ============================================================================
 
 model Company {
-  id                          String    @id @default(cuid())
-  name                        String
-  memberId                    String    @unique // Format: HB-000001
-  logoUrl                     String?
-  canUseReferrerPortal        Boolean   @default(false)
-  canUseProviderPortal        Boolean   @default(false)
-  providerApplicationPending  Boolean   @default(false)
-  isSuspended                 Boolean   @default(false)
-  cashBalance                 Decimal   @default(0) @db.Decimal(12, 2)
-  benefitsBalance             Decimal   @default(0) @db.Decimal(12, 2)
-  createdAt                   DateTime  @default(now())
-  updatedAt                   DateTime  @updatedAt
+  id                         String   @id @default(cuid())
+  name                       String
+  memberId                   String   @unique // Format: HB-000001 - IMMUTABLE across team moves
+  logoUrl                    String?
+  canUseReferrerPortal       Boolean  @default(false)
+  canUseProviderPortal       Boolean  @default(false)
+  providerApplicationPending Boolean  @default(false)
+  isSuspended                Boolean  @default(false)
+  cashBalance                Decimal  @default(0) @db.Decimal(12, 2)
+  benefitsBalance            Decimal  @default(0) @db.Decimal(12, 2)
+  // ---- MLM fields ----
+  teamRole                   TeamRole @default(MEMBER)
+  l1ManagerCompanyId         String? // direct upline (self-ref)
+  originalSponsorCompanyId   String? // set once on first-referral; drives lifetime 1%
+  providerOwedBalance        Decimal  @default(0) @db.Decimal(12, 2) // A-Team: what you owe (positive = you owe)
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
 
   // Relations
-  users                User[]
-  providerProfile      ProviderProfile?
-  leadsAsProvider      Lead[]               @relation("ProviderLeads")
-  leadsAsReferrer      Lead[]               @relation("ReferrerLeads")
-  walletTransactions   WalletTransaction[]
-  withdrawalRequests   WithdrawalRequest[]
-  leadNotes            LeadNote[]
-  priceChangeRequests  PriceChangeRequest[]
+  users               User[]
+  providerProfile     ProviderProfile?
+  leadsAsProvider     Lead[]               @relation("ProviderLeads")
+  leadsAsReferrer     Lead[]               @relation("ReferrerLeads")
+  walletTransactions  WalletTransaction[]
+  withdrawalRequests  WithdrawalRequest[]
+  leadNotes           LeadNote[]
+  priceChangeRequests PriceChangeRequest[]
+
+  // MLM self-relations
+  l1Manager         Company?  @relation("L1Manager", fields: [l1ManagerCompanyId], references: [id], onDelete: SetNull)
+  directDownline    Company[] @relation("L1Manager")
+  originalSponsor   Company?  @relation("OriginalSponsor", fields: [originalSponsorCompanyId], references: [id], onDelete: SetNull)
+  lifetimeReferrals Company[] @relation("OriginalSponsor")
+
+  teamMemberships          TeamMembership[] @relation("TeamMembershipMember")
+  teamMembershipsAsManager TeamMembership[] @relation("TeamMembershipManager")
+  payoutsAsBeneficiary     PayoutLedger[]   @relation("PayoutBeneficiary")
 
   @@index([memberId])
   @@index([isSuspended])
   @@index([providerApplicationPending])
+  @@index([teamRole])
+  @@index([l1ManagerCompanyId])
+  @@index([originalSponsorCompanyId])
 }
 
 model User {
@@ -110,8 +163,15 @@ model ProviderProfile {
   shortDescription  String         @db.Text
   commissionType    CommissionType
   commissionValue   Decimal        @db.Decimal(10, 2)
-  portfolioPhotos   String[]       // Portfolio/work sample images
+  portfolioPhotos   String[] // Portfolio/work sample images
   isPublished       Boolean        @default(true)
+  // ---- Catalogue / sales pitch ----
+  pitchPhotos       String[] // 1-4 pitch images
+  pitchText         String?        @db.Text // <=200 words sales pitch
+  dos               String[] // do's list
+  donts             String[] // don'ts list
+  publicSlug        String?        @unique // for /p/[slug]
+  searchRadiusMiles Int?
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
 
@@ -121,6 +181,7 @@ model ProviderProfile {
 
   @@index([zipCode])
   @@index([isPublished])
+  @@index([publicSlug])
 }
 
 model Lead {
@@ -139,6 +200,9 @@ model Lead {
   commissionTypeSnapshot  CommissionType
   commissionValueSnapshot Decimal        @db.Decimal(10, 2)
   calculatedCommission    Decimal?       @db.Decimal(12, 2)
+  // Upline snapshot captured at lead submission so future team moves don't rewrite history.
+  // Shape: { l1ManagerCompanyId, l2ManagerCompanyId, l3ManagerCompanyId, clubAdminCompanyId, originalSponsorCompanyId }
+  uplineSnapshotJson      Json?
   createdAt               DateTime       @default(now())
   updatedAt               DateTime       @updatedAt
 
@@ -148,6 +212,7 @@ model Lead {
   walletTransactions  WalletTransaction[]
   notes               LeadNote[]
   priceChangeRequests PriceChangeRequest[]
+  payoutLines         PayoutLedger[]
   review              Review?
 
   @@index([providerCompanyId])
@@ -183,7 +248,7 @@ model LeadNote {
   id              String   @id @default(cuid())
   leadId          String
   authorCompanyId String
-  authorName      String   // Denormalized for display
+  authorName      String // Denormalized for display
   content         String   @db.Text
   photos          String[]
   createdAt       DateTime @default(now())
@@ -237,11 +302,11 @@ model Review {
   providerProfileId String
   leadId            String    @unique // One review per lead
   token             String    @unique // URL token for shareable link
-  customerName      String    // Stored from lead's homeownerName
-  rating            Int?      // 1-5 stars, null until submitted
+  customerName      String // Stored from lead's homeownerName
+  rating            Int? // 1-5 stars, null until submitted
   comment           String?   @db.Text
   submittedAt       DateTime? // Null until customer submits
-  expiresAt         DateTime  // Link expires after this date
+  expiresAt         DateTime // Link expires after this date
   createdAt         DateTime  @default(now())
 
   // Relations
@@ -251,4 +316,69 @@ model Review {
   @@index([providerProfileId])
   @@index([token])
   @@index([submittedAt])
+}
+
+// ============================================================================
+// MLM MODELS
+// ============================================================================
+
+model TeamMembership {
+  id                 String    @id @default(cuid())
+  companyId          String
+  l1ManagerCompanyId String?
+  startedAt          DateTime  @default(now())
+  endedAt            DateTime?
+
+  company   Company  @relation("TeamMembershipMember", fields: [companyId], references: [id], onDelete: Cascade)
+  l1Manager Company? @relation("TeamMembershipManager", fields: [l1ManagerCompanyId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([l1ManagerCompanyId])
+  @@index([endedAt])
+}
+
+model CommissionPlan {
+  id        String   @id @default(cuid())
+  name      String
+  isActive  Boolean  @default(false) // only one active plan
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lines CommissionPlanLine[]
+
+  @@index([isActive])
+}
+
+model CommissionPlanLine {
+  id         String         @id @default(cuid())
+  planId     String
+  lineType   PayoutLineType
+  label      String
+  percentBps Int // basis points of total commission (10000 = 100%)
+  isActive   Boolean        @default(true)
+
+  plan CommissionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, lineType])
+  @@index([planId])
+}
+
+model PayoutLedger {
+  id                   String         @id @default(cuid())
+  leadId               String
+  lineType             PayoutLineType
+  beneficiaryCompanyId String?
+  amount               Decimal        @db.Decimal(12, 2)
+  status               PayoutStatus   @default(PENDING_COMPLETION)
+  createdAt            DateTime       @default(now())
+  releasedAt           DateTime?
+  paidAt               DateTime?
+
+  lead               Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  beneficiaryCompany Company? @relation("PayoutBeneficiary", fields: [beneficiaryCompanyId], references: [id], onDelete: SetNull)
+
+  @@index([leadId])
+  @@index([beneficiaryCompanyId])
+  @@index([status])
+  @@index([lineType])
 }

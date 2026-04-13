@@ -128,3 +128,75 @@ export type CreateProviderProfileInput = z.infer<typeof createProviderProfileSch
 export type SuspendCompanyInput = z.infer<typeof suspendCompanySchema>;
 export type DeleteCompanyInput = z.infer<typeof deleteCompanySchema>;
 export type ProviderSearchInput = z.infer<typeof providerSearchSchema>;
+
+// ============================================================================
+// MLM / Catalogue Schemas
+// ============================================================================
+
+/** Count words in a string (trimmed, whitespace-separated). */
+export function wordCount(text: string): number {
+  const trimmed = text.trim();
+  if (!trimmed) return 0;
+  return trimmed.split(/\s+/).length;
+}
+
+export const updatePitchSchema = z.object({
+  pitchPhotos: z
+    .array(z.string().url())
+    .min(1, 'Upload at least 1 photo')
+    .max(4, 'Maximum 4 photos'),
+  pitchText: z
+    .string()
+    .min(1, 'Pitch text is required')
+    .refine((t) => wordCount(t) <= 200, '200 words maximum'),
+  dos: z.array(z.string().min(1)).max(10).default([]),
+  donts: z.array(z.string().min(1)).max(10).default([]),
+});
+
+export const updateCatalogueSchema = updatePitchSchema.extend({
+  searchRadiusMiles: z.number().int().positive().max(500).optional(),
+});
+
+export const changeL1ManagerSchema = z.object({
+  newL1ManagerCompanyId: z.string().cuid('Invalid manager ID'),
+});
+
+export const commissionPlanLineInput = z.object({
+  lineType: z.enum([
+    'DIRECT_REFERRER',
+    'L1_MANAGER',
+    'L2_MANAGER',
+    'L3_MANAGER',
+    'CLUB_ADMIN',
+    'ORIGINAL_SPONSOR_LIFETIME',
+    'POOL_BONUS_1',
+    'POOL_BONUS_2',
+    'POOL_BONUS_3',
+    'POOL_BONUS_4',
+    'POOL_BONUS_5',
+    'PROVIDER_FEE_OFFSET',
+  ]),
+  label: z.string().min(1).max(100),
+  percentBps: z.number().int().min(0).max(10000),
+  isActive: z.boolean(),
+});
+
+export const updateCommissionPlanSchema = z
+  .object({
+    name: z.string().min(1).max(100),
+    lines: z.array(commissionPlanLineInput).length(12, 'Must have exactly 12 lines'),
+  })
+  .refine(
+    (data) => {
+      const total = data.lines
+        .filter((l) => l.isActive)
+        .reduce((sum, l) => sum + l.percentBps, 0);
+      return total === 10000;
+    },
+    { message: 'Active lines must sum to exactly 100% (10000 bps)', path: ['lines'] }
+  );
+
+export type UpdatePitchInput = z.infer<typeof updatePitchSchema>;
+export type UpdateCatalogueInput = z.infer<typeof updateCatalogueSchema>;
+export type ChangeL1ManagerInput = z.infer<typeof changeL1ManagerSchema>;
+export type UpdateCommissionPlanInput = z.infer<typeof updateCommissionPlanSchema>;
