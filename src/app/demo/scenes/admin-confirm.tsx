@@ -1,88 +1,84 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle } from 'lucide-react';
-import { AnnotationBubble } from '../components/annotation-bubble';
+import { Badge } from '@/components/ui/badge';
 import { MockHeader } from '../components/mock-header';
+import { AnnotationBubble } from '../components/annotation-bubble';
 import { MOCK, formatMoney } from '../mock-data';
+import { ShieldCheck } from 'lucide-react';
 
-interface AdminConfirmProps {
+interface Props {
   step: number;
 }
 
-export function AdminConfirm({ step }: AdminConfirmProps) {
+export function AdminConfirm({ step }: Props) {
   return (
     <div className="w-full">
       <MockHeader role="admin" />
       <div className="bg-card rounded-b-lg border border-t-0 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">Pending Deal Confirmations</h2>
-          <Badge className="bg-amber-100 text-amber-800 border-amber-200">1 Pending</Badge>
-        </div>
-
-        {step < 2 ? (
-          <div className="relative">
-            <Card className="animate-demo-fade-in">
-              <CardContent className="p-5">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-                  <div>
-                    <div className="text-xs text-muted-foreground">Referrer</div>
-                    <div className="font-medium">{MOCK.referrerCompany.name}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground">Provider</div>
-                    <div className="font-medium">{MOCK.providerCompany.name}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground">Job Value</div>
-                    <div className="font-medium">{formatMoney(MOCK.finalJobValue)}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground">Commission</div>
-                    <div className="font-medium text-emerald-600">
-                      {formatMoney(MOCK.calculatedCommission)}
-                    </div>
-                  </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-purple-600" />
+              Pending Confirmation
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <div className="text-xs text-muted-foreground">Provider</div>
+                <div className="font-medium">{MOCK.provider.name}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">Referrer</div>
+                <div className="font-medium">{MOCK.referrer.name}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">Homeowner</div>
+                <div className="font-medium">{MOCK.homeowner.name}</div>
+              </div>
+              <div>
+                <div className="text-xs text-muted-foreground">Job Value</div>
+                <div className="font-medium font-mono">
+                  {formatMoney(MOCK.commission.jobValue)}
                 </div>
+              </div>
+            </div>
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-sm font-medium">{MOCK.homeowner.name}</span>
-                    <span className="text-sm text-muted-foreground ml-2">{MOCK.category}</span>
-                  </div>
-                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
-                    <Button variant="outline" size="sm">
-                      Reject
-                    </Button>
-                    <Button
-                      size="sm"
-                      className={step === 1 ? 'animate-demo-scale-click' : ''}
-                    >
-                      Confirm Deal
-                    </Button>
-                    {step >= 1 && (
-                      <AnnotationBubble visible inline>
-                        Admin confirms the deal
-                      </AnnotationBubble>
-                    )}
-                  </div>
+            <div className="flex items-center justify-between rounded-md bg-muted p-3">
+              <span className="text-sm">Commission to distribute:</span>
+              <span className="font-mono font-bold text-lg">
+                {formatMoney(MOCK.commission.total)}
+              </span>
+            </div>
+
+            {step === 0 && (
+              <div className="flex gap-2">
+                <Button className="animate-demo-pulse-ring ring-2 ring-yellow-400">
+                  Confirm & Release
+                </Button>
+                <Button variant="outline">Hold</Button>
+              </div>
+            )}
+
+            {step >= 1 && (
+              <div className="animate-demo-fade-in">
+                <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300">
+                  CONFIRMED · Payouts released
+                </Badge>
+                <div className="mt-2 text-xs text-muted-foreground">
+                  12 PayoutLedger rows flipped from PENDING → AVAILABLE.
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        ) : (
-          <Card className="max-w-md mx-auto animate-demo-scale-up text-center">
-            <CardContent className="pt-8 pb-8">
-              <CheckCircle className="h-12 w-12 text-emerald-500 mx-auto mb-3" />
-              <h3 className="text-lg font-bold">Deal Confirmed!</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Processing payment distribution...
-              </p>
-            </CardContent>
-          </Card>
-        )}
+                <div className="mt-3 flex justify-center">
+                  <AnnotationBubble visible>
+                    Now watch the 12-line split fire →
+                  </AnnotationBubble>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

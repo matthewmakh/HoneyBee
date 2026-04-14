@@ -9,24 +9,31 @@ interface MockHeaderProps {
 
 const roleConfig = {
   referrer: {
-    label: 'Referrer Portal',
+    label: 'Bee Team · Referrer',
     bgColor: 'bg-blue-600',
     textColor: 'text-blue-50',
-    company: 'ABC Realty',
-    memberId: 'HB-000042',
+    company: 'Riley Martinez',
+    memberId: 'HB-000156',
   },
   provider: {
-    label: 'Provider Portal',
+    label: 'A-Team · Provider',
     bgColor: 'bg-emerald-600',
     textColor: 'text-emerald-50',
-    company: 'TyeNY Software Development',
-    memberId: 'HB-000007',
+    company: 'Sunshine Solar Co',
+    memberId: 'HB-P-00011',
   },
   admin: {
-    label: 'Admin Dashboard',
+    label: 'Club Admin',
     bgColor: 'bg-purple-600',
     textColor: 'text-purple-50',
-    company: 'System Admin',
+    company: 'Bee Club HQ',
+    memberId: 'HB-000001',
+  },
+  public: {
+    label: 'honeybee.app / p / sunshine-solar-co',
+    bgColor: 'bg-slate-900',
+    textColor: 'text-slate-50',
+    company: 'Public Page',
     memberId: '',
   },
 };

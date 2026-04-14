@@ -1,138 +1,124 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { DollarSign, Gift } from 'lucide-react';
-import { AnnotationBubble } from '../components/annotation-bubble';
 import { MockHeader } from '../components/mock-header';
+import { AnnotationBubble } from '../components/annotation-bubble';
 import { MOCK, formatMoney } from '../mock-data';
 import { useCountUp } from '../use-count-up';
 
-interface ReferrerWalletProps {
+interface Props {
   step: number;
 }
 
-export function ReferrerWallet({ step }: ReferrerWalletProps) {
-  const cashCount = useCountUp(MOCK.cashSplit, { active: step >= 0, duration: 1200 });
-  const benefitsCount = useCountUp(MOCK.benefitsSplit, { active: step >= 0, duration: 1200 });
+export function ReferrerWallet({ step }: Props) {
+  // Totals — pretend Riley has several historic deals.
+  const green = useCountUp(1848, { active: step >= 1, duration: 900 });
+  const grey = useCountUp(720, { active: step >= 1, duration: 900 });
+  const black = useCountUp(9420, { active: step >= 1, duration: 1200 });
+
+  // Per-lead 12-line rows — show just the 6 lines Riley herself receives.
+  const rileyLines = MOCK.lines.filter(
+    (l) =>
+      l.beneficiary === 'Riley Martinez' ||
+      l.beneficiary === 'Riley (Benefits)'
+  );
 
   return (
     <div className="w-full">
       <MockHeader role="referrer" />
-      <div className="bg-card rounded-b-lg border border-t-0 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">My Wallet</h2>
-          <Button variant="outline" size="sm">
-            Request Withdrawal
-          </Button>
+      <div className="bg-card rounded-b-lg border border-t-0 p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-bold">Wallet</h2>
+          <span className="text-xs text-muted-foreground">
+            /dashboard/referrer/wallet
+          </span>
         </div>
 
-        <div>
-          <div className="flex items-start gap-3 mb-6">
-            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Card className="bg-emerald-50 border-emerald-200 animate-demo-fade-in">
-                <CardContent className="p-5">
-                  <div className="flex items-center gap-2 mb-2">
-                    <DollarSign className="h-5 w-5 text-emerald-600" />
-                    <span className="text-sm font-medium text-emerald-700">Cash Balance</span>
-                  </div>
-                  <div className="text-3xl font-bold text-emerald-700">
-                    {formatMoney(cashCount)}
-                  </div>
-                  <p className="text-xs text-emerald-600 mt-1">Available for withdrawal</p>
-                </CardContent>
-              </Card>
-
-              <Card className="bg-blue-50 border-blue-200 animate-demo-fade-in">
-                <CardContent className="p-5">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Gift className="h-5 w-5 text-blue-600" />
-                    <span className="text-sm font-medium text-blue-700">Benefits Balance</span>
-                  </div>
-                  <div className="text-3xl font-bold text-blue-700">
-                    {formatMoney(benefitsCount)}
-                  </div>
-                  <p className="text-xs text-blue-600 mt-1">Benefits marketplace credits</p>
-                </CardContent>
-              </Card>
-            </div>
-            {step === 0 && (
-              <div className="pt-4">
-                <AnnotationBubble visible inline>
-                  Balances update in real-time
-                </AnnotationBubble>
+        {/* Color-coded summary */}
+        <div className="grid grid-cols-3 gap-3">
+          <Card className="border-emerald-300 bg-emerald-50">
+            <CardContent className="p-4">
+              <div className="text-xs text-emerald-700 font-semibold uppercase tracking-wide">
+                Available (green)
               </div>
-            )}
-          </div>
-
-          {step >= 1 && (
-            <div className="flex flex-wrap sm:flex-nowrap items-start gap-2 sm:gap-3">
-              <Card className="flex-1 animate-demo-slide-in-right">
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Recent Transactions</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="divide-y">
-                    <div className="flex items-center justify-between py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
-                          <DollarSign className="h-4 w-4 text-emerald-600" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium">
-                            {MOCK.homeowner.name} &bull; {MOCK.category}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            via {MOCK.providerCompany.name}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-semibold text-emerald-600">
-                          +{formatMoney(MOCK.cashSplit)}
-                        </div>
-                        <Badge variant="secondary" className="text-xs">
-                          Cash
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                          <Gift className="h-4 w-4 text-blue-600" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium">
-                            {MOCK.homeowner.name} &bull; {MOCK.category}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            via {MOCK.providerCompany.name}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-semibold text-blue-600">
-                          +{formatMoney(MOCK.benefitsSplit)}
-                        </div>
-                        <Badge variant="secondary" className="text-xs">
-                          Benefits
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              {step >= 1 && (
-                <div className="pt-4">
-                  <AnnotationBubble visible inline>
-                    Track earnings &amp; withdrawals
-                  </AnnotationBubble>
-                </div>
-              )}
-            </div>
-          )}
+              <div className="font-mono font-bold text-2xl text-emerald-900 mt-1">
+                {formatMoney(green)}
+              </div>
+              <div className="text-[10px] text-emerald-700 mt-1">
+                Ready to withdraw
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-gray-300 bg-gray-50">
+            <CardContent className="p-4">
+              <div className="text-xs text-gray-700 font-semibold uppercase tracking-wide">
+                Pending (grey)
+              </div>
+              <div className="font-mono font-bold text-2xl text-gray-800 mt-1">
+                {formatMoney(grey)}
+              </div>
+              <div className="text-[10px] text-gray-600 mt-1">
+                Not yet confirmed
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-800 bg-slate-900 text-slate-50">
+            <CardContent className="p-4">
+              <div className="text-xs text-slate-400 font-semibold uppercase tracking-wide">
+                Paid lifetime (black)
+              </div>
+              <div className="font-mono font-bold text-2xl mt-1">
+                {formatMoney(black)}
+              </div>
+              <div className="text-[10px] text-slate-400 mt-1">
+                Already withdrawn
+              </div>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* 12-line breakdown for Sarah Johnson's deal */}
+        {step >= 2 && (
+          <Card className="animate-demo-fade-in">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">
+                Sarah Johnson · Solar + Battery · {formatMoney(42000)}
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Your lines on this deal:
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-1.5">
+              {rileyLines.map((l) => (
+                <div
+                  key={l.key}
+                  className="flex items-center justify-between rounded-md bg-emerald-50 border border-emerald-200 px-3 py-2"
+                >
+                  <span className="text-xs font-medium text-emerald-900">
+                    {l.label}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-semibold uppercase text-emerald-700">
+                      Available
+                    </span>
+                    <span className="font-mono font-bold text-sm text-emerald-900">
+                      {formatMoney(l.amount, { cents: true })}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {step === 3 && (
+          <div className="flex justify-center">
+            <AnnotationBubble visible>
+              Green = available · Grey = pending · Black = paid · YTD +
+              Lifetime totals above
+            </AnnotationBubble>
+          </div>
+        )}
       </div>
     </div>
   );
