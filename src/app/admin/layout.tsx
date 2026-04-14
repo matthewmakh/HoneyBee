@@ -13,7 +13,16 @@ import {
 } from '@/components/ui';
 import { SignOutButton } from '@/components/sign-out-button';
 import { getInitials } from '@/lib/utils';
-import { LayoutDashboard, Clock, Building2, UserCheck, Wallet } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Clock,
+  Building2,
+  UserCheck,
+  Wallet,
+  Users,
+  Percent,
+  Coins,
+} from 'lucide-react';
 import { getPendingProviderApplications } from '@/lib/services/companies';
 import { getPendingWithdrawalRequests } from '@/lib/services/finance';
 
@@ -49,6 +58,9 @@ export default async function AdminLayout({
       badge: pendingApps.length > 0 ? pendingApps.length : null,
     },
     { href: '/admin/companies', label: 'Companies', icon: Building2 },
+    { href: '/admin/team', label: 'Team', icon: Users },
+    { href: '/admin/commission-plan', label: 'Plan', icon: Percent },
+    { href: '/admin/payouts', label: 'Payouts', icon: Coins },
     {
       href: '/admin/withdrawals',
       label: 'Withdrawals',
