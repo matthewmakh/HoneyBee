@@ -17,7 +17,17 @@ import {
 } from '@/components/ui';
 import { SignOutButton } from '@/components/sign-out-button';
 import { getInitials } from '@/lib/utils';
-import { Wallet, Clock, Users, Briefcase, Send, Settings, Home } from 'lucide-react';
+import {
+  Wallet,
+  Clock,
+  Users,
+  Briefcase,
+  Send,
+  Settings,
+  Home,
+  Network,
+  Upload,
+} from 'lucide-react';
 
 export default async function DashboardLayout({
   children,
@@ -71,14 +81,40 @@ export default async function DashboardLayout({
               </Tabs>
             )}
 
-            {/* Wallet link for referrers - Desktop */}
+            {/* Wallet + Team links for referrers - Desktop */}
             {canUseReferrerPortal && (
-              <Link href="/dashboard/referrer/wallet" className="hidden md:block">
-                <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
-                  <Wallet className="h-4 w-4" />
-                  Wallet
-                </Button>
-              </Link>
+              <div className="hidden md:flex items-center gap-1">
+                <Link href="/dashboard/referrer/wallet">
+                  <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
+                    <Wallet className="h-4 w-4" />
+                    Wallet
+                  </Button>
+                </Link>
+                <Link href="/dashboard/referrer/team">
+                  <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
+                    <Network className="h-4 w-4" />
+                    Team
+                  </Button>
+                </Link>
+              </div>
+            )}
+
+            {/* Pitch + Wallet links for providers - Desktop */}
+            {canUseProviderPortal && (
+              <div className="hidden md:flex items-center gap-1">
+                <Link href="/dashboard/provider/pitch">
+                  <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
+                    <Upload className="h-4 w-4" />
+                    Pitch
+                  </Button>
+                </Link>
+                <Link href="/dashboard/provider/wallet">
+                  <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
+                    <Wallet className="h-4 w-4" />
+                    Wallet
+                  </Button>
+                </Link>
+              </div>
             )}
           </div>
 
@@ -162,31 +198,54 @@ export default async function DashboardLayout({
           
           {canUseReferrerPortal && (
             <>
-              <Link 
-                href="/dashboard/referrer/providers" 
-                className="flex flex-col items-center justify-center gap-1 px-3 py-2 text-muted-foreground hover:text-foreground transition-colors"
+              <Link
+                href="/dashboard/referrer/providers"
+                className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Users className="h-5 w-5" />
-                <span className="text-xs">Providers</span>
+                <span className="text-[10px]">Providers</span>
               </Link>
-              <Link 
-                href="/dashboard/referrer/wallet" 
-                className="flex flex-col items-center justify-center gap-1 px-3 py-2 text-muted-foreground hover:text-foreground transition-colors"
+              <Link
+                href="/dashboard/referrer/team"
+                className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Network className="h-5 w-5" />
+                <span className="text-[10px]">Team</span>
+              </Link>
+              <Link
+                href="/dashboard/referrer/wallet"
+                className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Wallet className="h-5 w-5" />
-                <span className="text-xs">Wallet</span>
+                <span className="text-[10px]">Wallet</span>
               </Link>
             </>
           )}
-          
+
           {canUseProviderPortal && (
-            <Link 
-              href="/dashboard/provider/settings" 
-              className="flex flex-col items-center justify-center gap-1 px-3 py-2 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Settings className="h-5 w-5" />
-              <span className="text-xs">Settings</span>
-            </Link>
+            <>
+              <Link
+                href="/dashboard/provider/pitch"
+                className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Upload className="h-5 w-5" />
+                <span className="text-[10px]">Pitch</span>
+              </Link>
+              <Link
+                href="/dashboard/provider/wallet"
+                className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Wallet className="h-5 w-5" />
+                <span className="text-[10px]">Wallet</span>
+              </Link>
+              <Link
+                href="/dashboard/provider/settings"
+                className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Settings className="h-5 w-5" />
+                <span className="text-[10px]">Settings</span>
+              </Link>
+            </>
           )}
         </div>
       </nav>
