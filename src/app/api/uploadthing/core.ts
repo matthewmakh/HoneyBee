@@ -32,6 +32,22 @@ export const ourFileRouter = {
     .onUploadComplete(async ({ file }) => {
       return { url: file.ufsUrl };
     }),
+
+  // A-Team pitch photos (1-4 images, max 8MB each)
+  pitchPhotos: f({
+    image: { maxFileSize: '8MB', maxFileCount: 4 },
+  })
+    .middleware(async () => {
+      const session = await auth();
+      if (!session?.user) throw new Error('Unauthorized');
+      if (!session.user.company.canUseProviderPortal) {
+        throw new Error('Provider access required');
+      }
+      return { companyId: session.user.companyId };
+    })
+    .onUploadComplete(async ({ file }) => {
+      return { url: file.ufsUrl };
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;
