@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
-import { calculateCommission } from './finance';
+import { calculateCommission, createPendingPayoutLines } from './finance';
+import { getUplineSnapshot, setOriginalSponsor } from './teams';
 import type {
   LeadWithCompanies,
   ReferrerDashboardStats,
@@ -76,7 +77,10 @@ export async function createLead(input: CreateLeadInput): Promise<LeadWithCompan
     throw new Error('Cannot submit a lead to your own company');
   }
 
-  // Create lead with commission snapshot
+  // Capture upline snapshot at submission time so team moves later don't rewrite history.
+  const uplineSnapshot = await getUplineSnapshot(input.referrerCompanyId);
+
+  // Create lead with commission + upline snapshot
   const lead = await prisma.lead.create({
     data: {
       referrerCompanyId: input.referrerCompanyId,
@@ -90,12 +94,22 @@ export async function createLead(input: CreateLeadInput): Promise<LeadWithCompan
       status: 'SUBMITTED',
       commissionTypeSnapshot: providerProfile.commissionType,
       commissionValueSnapshot: providerProfile.commissionValue,
+      uplineSnapshotJson: uplineSnapshot as unknown as object,
     },
     include: {
       providerCompany: true,
       referrerCompany: true,
     },
   });
+
+  // First-ever referrer activity locks in the "original sponsor" = direct L-1 manager (or self if none).
+  // This provides lifetime 1% attribution for the person who first brought them in.
+  if (uplineSnapshot.l1ManagerCompanyId) {
+    await setOriginalSponsor(
+      input.referrerCompanyId,
+      uplineSnapshot.l1ManagerCompanyId
+    );
+  }
 
   return lead;
 }
@@ -133,7 +147,7 @@ export async function acceptLead(
     throw new Error('Lead can only be accepted when in SUBMITTED status');
   }
 
-  return prisma.lead.update({
+  const updated = await prisma.lead.update({
     where: { id: leadId },
     data: {
       status: 'ACCEPTED',
@@ -145,6 +159,20 @@ export async function acceptLead(
       referrerCompany: true,
     },
   });
+
+  // Pre-materialize 12 PENDING_COMPLETION payout rows so wallet shows "grey" amounts.
+  const estimatedCommission = calculateCommission(
+    estimatedJobValue,
+    lead.commissionTypeSnapshot,
+    Number(lead.commissionValueSnapshot)
+  );
+  try {
+    await createPendingPayoutLines(leadId, estimatedCommission);
+  } catch {
+    // Plan not configured yet — safe to no-op; wallet falls back to legacy view.
+  }
+
+  return updated;
 }
 
 /**
