@@ -58,7 +58,7 @@ async function upsertCompany(
 }
 
 async function ensureUser(companyId: string, email: string, name: string) {
-  const hashed = await bcrypt.hash('password123', 10);
+  const hashed = await bcrypt.hash('Test123!', 10);
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return existing;
   return prisma.user.create({

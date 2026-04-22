@@ -16,7 +16,7 @@ async function main() {
   console.log('✅ Cleaned\n');
 
   // Hash password for all users
-  const hashedPassword = await bcrypt.hash('password123', 10);
+  const hashedPassword = await bcrypt.hash('Test123!', 10);
 
   // Create Super Admin Company first
   console.log('👑 Creating Super Admin...');
@@ -281,7 +281,7 @@ async function main() {
 
   console.log('✅ Created 5 sample leads\n');
   console.log('🎉 Seed completed!\n');
-  console.log('Login Credentials (password: password123):');
+  console.log('Login Credentials (password: Test123!):');
   console.log('  Super Admin: admin@honeybee.com');
   console.log('  Referrer:    john@goldenreferrals.com / jane@goldenreferrals.com');
   console.log('  Providers:   mike@coolair.com / sarah@fastflow.com / tom@brightspark.com');
