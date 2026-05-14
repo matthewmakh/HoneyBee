@@ -67,8 +67,8 @@ export function AdminConfirm({ step }: Props) {
                 <CheckCircle2 className="h-4 w-4 text-amber-300" />
                 <span className="text-sm font-semibold text-amber-200">CONFIRMED · Payouts released</span>
               </div>
-              <p className="mt-2 text-xs text-stone-400 font-mono">
-                12 PayoutLedger rows flipped from <span className="text-stone-300">PENDING</span> → <span className="text-amber-300">AVAILABLE</span>
+              <p className="mt-2 text-xs text-stone-400">
+                <span className="font-mono text-stone-300">12 payout lines</span> moved from <span className="text-stone-300">Pending</span> → <span className="text-amber-300 font-semibold">Available</span>
               </p>
               <div className="mt-3 flex justify-center">
                 <AnnotationBubble visible>

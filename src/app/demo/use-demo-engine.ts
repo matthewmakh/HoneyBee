@@ -25,19 +25,19 @@ export interface DemoEngineState {
 
 // 13 scenes covering the full MLM lifecycle.
 export const DEMO_SCENES: DemoScene[] = [
-  { id: 'intro',            duration: 6000,  steps: 3, actor: null,       title: 'Intro',          caption: '' },
-  { id: 'provider-pitch',   duration: 10000, steps: 4, actor: 'provider', title: 'A-Team Pitch',   caption: 'A-Team providers upload 1–4 photos and a 200-word pitch — never any dollar figures. The page auto-publishes at /p/<slug>.' },
-  { id: 'public-page',      duration: 7000,  steps: 3, actor: 'public',   title: 'Public Page',    caption: 'The pitch sits at a public URL — safe to share with any homeowner. No commissions or dollar amounts ever appear here.' },
-  { id: 'referrer-present', duration: 9000,  steps: 4, actor: 'referrer', title: 'Present',        caption: 'A Bee Team referrer toggles presentation mode — full-screen, dark, customer-facing. Same content, no earnings visible.' },
-  { id: 'referrer-submit',  duration: 9000,  steps: 3, actor: 'referrer', title: 'Submit',         caption: 'Submitting the referral freezes the upline snapshot — L-1, L-2, L-3, and the lifetime sponsor are locked in for this deal.' },
-  { id: 'provider-close',   duration: 9000,  steps: 3, actor: 'provider', title: 'Close Deal',     caption: 'The provider accepts the lead (12 PENDING payout rows spawn), then reports the final job value when work completes.' },
-  { id: 'admin-confirm',    duration: 7000,  steps: 2, actor: 'admin',    title: 'Admin Confirm',  caption: 'Club Admin confirms the deal — all 12 PayoutLedger rows flip from PENDING to AVAILABLE in one atomic step.' },
-  { id: 'split-12',         duration: 14000, steps: 6, actor: 'admin',    title: '12-Line Split',  caption: 'Every closed deal splits across the same 12 lines: direct referrer, upline overrides, Club Admin, lifetime sponsor, pools, and platform.' },
-  { id: 'upline-cascade',   duration: 11000, steps: 5, actor: 'admin',    title: 'Upline',         caption: 'Overrides cascade up through the L-1, L-2, L-3 managers — then Club Admin on top. The lifetime sponsor branches off — 1% forever.' },
-  { id: 'referrer-wallet',  duration: 9000,  steps: 4, actor: 'referrer', title: 'Wallet',         caption: 'Each referrer sees three buckets: Green (available), Grey (pending), Black (paid lifetime) — plus the line-by-line breakdown per deal.' },
-  { id: 'team-move',        duration: 9000,  steps: 3, actor: 'referrer', title: 'Team Move',      caption: 'Swap your L-1 manager any time — your member ID and every historical payout snapshot stay frozen. No payout rewrites.' },
-  { id: 'admin-payouts',    duration: 9000,  steps: 3, actor: 'admin',    title: 'Payouts',        caption: 'Club Admin filters the global PayoutLedger by status and bulk-marks rows Paid — debiting wallets atomically.' },
-  { id: 'outro',            duration: 7000,  steps: 3, actor: null,       title: 'Summary',        caption: '' },
+  { id: 'intro',            duration: 6500,  steps: 3, actor: null,       title: 'Intro',          caption: '' },
+  { id: 'provider-pitch',   duration: 9000,  steps: 4, actor: 'provider', title: 'A-Team Pitch',   caption: 'A-Team providers upload up to 4 photos and a 200-word pitch — no prices, no commissions. The page auto-publishes the moment it’s saved.' },
+  { id: 'public-page',      duration: 7000,  steps: 3, actor: 'public',   title: 'Public Page',    caption: 'Every provider gets a clean public profile — share the link with any homeowner. Commissions and dollar figures stay private.' },
+  { id: 'referrer-present', duration: 9000,  steps: 4, actor: 'referrer', title: 'Present',        caption: 'Bee Team referrers flip into presentation mode — same content, full-screen, customer-safe. Zero earnings visible.' },
+  { id: 'referrer-submit',  duration: 9000,  steps: 3, actor: 'referrer', title: 'Submit',         caption: 'Submitting the referral freezes the upline — L-1, L-2, L-3, and the lifetime sponsor are locked in for this exact deal.' },
+  { id: 'provider-close',   duration: 9500,  steps: 3, actor: 'provider', title: 'Close Deal',     caption: 'The provider accepts the lead — 12 payout lines spawn, pending. When the job closes, they report the final value to lock in commissions.' },
+  { id: 'admin-confirm',    duration: 7000,  steps: 2, actor: 'admin',    title: 'Admin Confirm',  caption: 'Club Admin gives the final OK — all 12 payout lines flip from Pending to Available in one click.' },
+  { id: 'split-12',         duration: 16000, steps: 6, actor: 'admin',    title: '12-Line Split',  caption: 'Every closed deal splits across the same 12 lines: direct referrer, upline overrides, Club Admin, lifetime sponsor, pools, and platform.' },
+  { id: 'upline-cascade',   duration: 11000, steps: 5, actor: 'admin',    title: 'Upline',         caption: 'Overrides cascade up through L-1, L-2, L-3 managers — then Club Admin on top. The original sponsor branches off — 1% on every deal, forever.' },
+  { id: 'referrer-wallet',  duration: 10000, steps: 4, actor: 'referrer', title: 'Wallet',         caption: 'Three buckets — Green (available now), Grey (pending confirmation), Black (paid lifetime). Plus a line-by-line breakdown for every deal.' },
+  { id: 'team-move',        duration: 9000,  steps: 3, actor: 'referrer', title: 'Team Move',      caption: 'Swap your L-1 manager any time — your member ID and every past payout stay locked in. Old managers still get paid on their deals.' },
+  { id: 'admin-payouts',    duration: 9000,  steps: 3, actor: 'admin',    title: 'Payouts',        caption: 'Club Admin filters by status and bulk-marks lines paid — wallets debit in one shot, audit trail intact.' },
+  { id: 'outro',            duration: 8000,  steps: 3, actor: null,       title: 'Summary',        caption: '' },
 ];
 
 export function useDemoEngine() {

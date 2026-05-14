@@ -52,7 +52,7 @@ export function ProviderClose({ step }: Props) {
           {step === 1 && (
             <div className="animate-[fadeInUp_500ms_cubic-bezier(0.16,1,0.3,1)_forwards]">
               <p className="text-[11px] uppercase tracking-wider text-amber-300 mb-2">
-                Creating 12 PENDING_COMPLETION payout rows…
+                Spawning 12 payout lines · pending until job closes
               </p>
               <div className="h-1 rounded-full bg-stone-800 overflow-hidden">
                 <div

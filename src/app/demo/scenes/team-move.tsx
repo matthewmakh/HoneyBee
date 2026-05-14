@@ -77,17 +77,18 @@ export function TeamMove({ step }: Props) {
         )}
 
         {step >= 2 && (
-          <div className="animate-[fadeInUp_500ms_cubic-bezier(0.16,1,0.3,1)_forwards] rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs font-mono space-y-1">
-            <div className="text-stone-300">
-              <span className="text-stone-500">UPDATE</span> TeamMembership{' '}
-              <span className="text-stone-500">SET endedAt = now()</span> WHERE id = previous
+          <div className="animate-[fadeInUp_500ms_cubic-bezier(0.16,1,0.3,1)_forwards] rounded-md border border-amber-500/30 bg-amber-500/5 p-3 text-xs space-y-1.5">
+            <div className="flex items-center justify-between text-stone-300">
+              <span className="text-stone-500">Old membership</span>
+              <span>Alex Chen · <span className="text-stone-500">ended just now</span></span>
             </div>
-            <div className="text-stone-300">
-              <span className="text-stone-500">INSERT INTO</span>{' '}
-              TeamMembership(l1ManagerCompanyId=HB-000099, startedAt=now())
+            <div className="flex items-center justify-between text-stone-300">
+              <span className="text-stone-500">New membership</span>
+              <span>Priya Patel · <span className="text-amber-300">active now</span></span>
             </div>
-            <div className="text-amber-300 pt-1">
-              ✓ 3 open Leads keep their <code className="text-amber-200">uplineSnapshotJson</code> — old managers still get paid.
+            <div className="flex items-center gap-2 pt-1.5 border-t border-stone-700/50 text-amber-300">
+              <span className="text-base">✓</span>
+              <span>3 open deals keep the old upline frozen — Alex still gets paid on those.</span>
             </div>
           </div>
         )}

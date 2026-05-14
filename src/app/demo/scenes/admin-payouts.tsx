@@ -129,7 +129,7 @@ export function AdminPayouts({ step }: Props) {
       {step === 2 && (
         <div className="mt-4 flex justify-center">
           <AnnotationBubble visible>
-            Bulk-pay flips PayoutLedger → PAID and debits cashBalance atomically
+            Bulk-pay flips every selected line to Paid and debits wallets in one shot
           </AnnotationBubble>
         </div>
       )}

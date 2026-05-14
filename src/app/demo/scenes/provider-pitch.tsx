@@ -10,12 +10,12 @@ interface Props {
 }
 
 const pitchText =
-  'Whole-home solar + battery installs in as little as 2 days. We handle the permits, the utility paperwork, and the panel upgrade if you need one. Tier-1 panels, 25-year warranty, and financing that beats your current power bill.';
+  'Whole-home solar + battery in as little as 2 days. Tier-1 panels, 25-year warranty, financing that beats your power bill.';
 
 export function ProviderPitch({ step }: Props) {
   const { displayText, cursor } = useTypewriter(pitchText, {
-    speed: 22,
-    startDelay: 600,
+    speed: 14,
+    startDelay: 300,
     active: step >= 2,
   });
 

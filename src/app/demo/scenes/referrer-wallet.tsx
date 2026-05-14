@@ -10,17 +10,21 @@ interface Props {
 }
 
 export function ReferrerWallet({ step }: Props) {
-  // Pretend Riley has historic deals too.
-  const green = useCountUp(1848, { active: step >= 1, duration: 900 });
-  const grey = useCountUp(720, { active: step >= 1, duration: 900 });
-  const black = useCountUp(9420, { active: step >= 1, duration: 1200 });
-
-  // Per-deal 12-line rows — just Riley's own lines.
+  // Riley's lines on Sarah's deal — Direct Referrer + Customer Credit.
   const rileyLines = MOCK.lines.filter(
     (l) =>
       l.beneficiary === 'Riley Martinez' ||
       l.beneficiary === 'Riley (Benefits)'
   );
+  const fromThisDeal = rileyLines.reduce((sum, l) => sum + l.amount, 0); // $1,848
+
+  // Historic baseline (everything BEFORE Sarah's deal); deal adds to the green bucket on step >= 1.
+  const greenBase = 504;
+  const greenTotal = greenBase + fromThisDeal; // $2,352
+
+  const green = useCountUp(step >= 1 ? greenTotal : greenBase, { active: true, duration: 1100 });
+  const grey = useCountUp(720, { active: step >= 1, duration: 900 });
+  const black = useCountUp(9420, { active: step >= 1, duration: 1200 });
 
   return (
     <div className="px-6 sm:px-10 py-8 max-w-5xl mx-auto">
@@ -34,7 +38,7 @@ export function ReferrerWallet({ step }: Props) {
       {/* Three buckets — keeping the green/grey/black semantic but in honey-warm variants */}
       <div className="grid grid-cols-3 gap-3 mb-4">
         {/* Available (bright honey gold) */}
-        <div className="rounded-xl bg-gradient-to-br from-amber-400/15 to-amber-500/5 border border-amber-400/40 p-4 shadow-lg shadow-amber-500/10">
+        <div className="relative rounded-xl bg-gradient-to-br from-amber-400/15 to-amber-500/5 border border-amber-400/40 p-4 shadow-lg shadow-amber-500/10">
           <p className="text-[10px] uppercase tracking-widest text-amber-300 font-bold mb-1">
             Available <span className="text-amber-300/60">(green)</span>
           </p>
@@ -42,6 +46,11 @@ export function ReferrerWallet({ step }: Props) {
             {formatMoney(green)}
           </p>
           <p className="text-[10px] text-amber-300/70 mt-1">Ready to withdraw</p>
+          {step >= 1 && (
+            <div className="absolute -top-2 -right-2 rounded-full bg-amber-400 px-2 py-0.5 text-[10px] font-bold text-stone-950 shadow shadow-amber-500/40 animate-[scaleUp_400ms_cubic-bezier(0.16,1,0.3,1)_forwards]">
+              +{formatMoney(fromThisDeal)} from Sarah&apos;s deal
+            </div>
+          )}
         </div>
 
         {/* Pending (muted honey) */}
@@ -109,6 +118,10 @@ export function ReferrerWallet({ step }: Props) {
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(8px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes scaleUp {
+          from { opacity: 0; transform: scale(0.85); }
+          to { opacity: 1; transform: scale(1); }
         }
       `}</style>
     </div>

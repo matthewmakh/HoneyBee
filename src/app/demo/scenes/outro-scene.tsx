@@ -26,12 +26,12 @@ export function OutroScene({ step, onRestart }: Props) {
       </div>
 
       <h2 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-        1 Referral → <span className="text-amber-300">12 Payouts</span>
+        1 Referral. <span className="text-amber-300">12 Payouts.</span>
       </h2>
       <p className="text-base text-stone-300 mb-8 max-w-xl">
-        <span className="font-mono font-bold text-white tabular-nums">{formatMoney(MOCK.commission.total)}</span> on a{' '}
-        <span className="font-mono font-bold text-white tabular-nums">{formatMoney(MOCK.commission.jobValue)}</span> job, split every which way —
-        instantly and auditably.
+        <span className="font-mono font-bold text-white tabular-nums">{formatMoney(MOCK.commission.total)}</span> from a{' '}
+        <span className="font-mono font-bold text-white tabular-nums">{formatMoney(MOCK.commission.jobValue)}</span> job — split across the
+        whole team, instantly, with a full audit trail.
       </p>
 
       <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-8 max-w-3xl">

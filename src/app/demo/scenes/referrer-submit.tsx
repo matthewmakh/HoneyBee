@@ -17,7 +17,7 @@ export function ReferrerSubmit({ step }: Props) {
     active: step >= 0,
   });
   const desc = useTypewriter(MOCK.project.description, {
-    speed: 28,
+    speed: 18,
     startDelay: 200,
     active: step >= 1,
   });
@@ -38,20 +38,20 @@ export function ReferrerSubmit({ step }: Props) {
           </p>
 
           <div className="rounded-md border border-amber-500/25 bg-amber-500/5 p-4 text-left">
-            <p className="text-[10px] uppercase tracking-widest text-amber-300 mb-2 flex items-center gap-1.5">
-              <Lock className="h-3 w-3" /> Upline snapshot · frozen
+            <p className="text-[10px] uppercase tracking-widest text-amber-300 mb-3 flex items-center gap-1.5">
+              <Lock className="h-3 w-3" /> Upline frozen for this deal
             </p>
-            <div className="space-y-1.5 font-mono text-xs">
+            <div className="space-y-2 text-xs">
               {[
-                { k: 'snapshot.l1', v: MOCK.l1Manager.memberId, name: MOCK.l1Manager.name },
-                { k: 'snapshot.l2', v: MOCK.l2Manager.memberId, name: MOCK.l2Manager.name },
-                { k: 'snapshot.l3', v: MOCK.l3Manager.memberId, name: MOCK.l3Manager.name },
-                { k: 'snapshot.sponsor', v: MOCK.originalSponsor.memberId, name: 'Lifetime 1%' },
+                { role: 'L-1 Manager',        name: MOCK.l1Manager.name,        id: MOCK.l1Manager.memberId },
+                { role: 'L-2 Manager',        name: MOCK.l2Manager.name,        id: MOCK.l2Manager.memberId },
+                { role: 'L-3 Manager',        name: MOCK.l3Manager.name,        id: MOCK.l3Manager.memberId },
+                { role: 'Lifetime Sponsor',   name: MOCK.originalSponsor.name,  id: MOCK.originalSponsor.memberId },
               ].map((s) => (
-                <div key={s.k} className="flex items-center justify-between gap-2">
-                  <span className="text-stone-500">{s.k}:</span>
-                  <span className="text-stone-200 tabular-nums">
-                    {s.v} <span className="text-stone-500">({s.name})</span>
+                <div key={s.role} className="flex items-center justify-between gap-2">
+                  <span className="text-stone-400">{s.role}</span>
+                  <span className="text-stone-200">
+                    {s.name} <span className="font-mono text-stone-500 ml-1">{s.id}</span>
                   </span>
                 </div>
               ))}
