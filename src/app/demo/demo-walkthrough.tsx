@@ -1,10 +1,6 @@
 'use client';
 
-import { useDemoEngine } from './use-demo-engine';
-import { ProgressBar } from './components/progress-bar';
-import { RoleBadge } from './components/role-badge';
-import { DemoControls } from './components/demo-controls';
-import { SceneContainer } from './components/scene-container';
+import { useDemoEngine, DEMO_SCENES } from './use-demo-engine';
 import { IntroScene } from './scenes/intro-scene';
 import { ProviderPitch } from './scenes/provider-pitch';
 import { PublicPage } from './scenes/public-page';
@@ -18,77 +14,149 @@ import { ReferrerWallet } from './scenes/referrer-wallet';
 import { TeamMove } from './scenes/team-move';
 import { AdminPayouts } from './scenes/admin-payouts';
 import { OutroScene } from './scenes/outro-scene';
+import { Play, Pause, ChevronLeft, ChevronRight, Gauge } from 'lucide-react';
+
+const SCENE_RENDERERS = [
+  IntroScene,
+  ProviderPitch,
+  PublicPage,
+  ReferrerPresent,
+  ReferrerSubmit,
+  ProviderClose,
+  AdminConfirm,
+  Split12,
+  UplineCascade,
+  ReferrerWallet,
+  TeamMove,
+  AdminPayouts,
+  OutroScene,
+] as const;
 
 export function DemoWalkthrough() {
   const {
     state,
-    currentScene,
-    totalScenes,
-    pause,
-    resume,
-    skip,
+    sceneProgress,
+    togglePlay,
+    next,
+    prev,
+    goTo,
     restart,
     cycleSpeed,
   } = useDemoEngine();
 
-  const renderScene = () => {
-    const step = state.stepIndex;
-    switch (state.sceneIndex) {
-      case 0:  return <IntroScene step={step} />;
-      case 1:  return <ProviderPitch step={step} />;
-      case 2:  return <PublicPage step={step} />;
-      case 3:  return <ReferrerPresent step={step} />;
-      case 4:  return <ReferrerSubmit step={step} />;
-      case 5:  return <ProviderClose step={step} />;
-      case 6:  return <AdminConfirm step={step} />;
-      case 7:  return <Split12 step={step} />;
-      case 8:  return <UplineCascade step={step} />;
-      case 9:  return <ReferrerWallet step={step} />;
-      case 10: return <TeamMove step={step} />;
-      case 11: return <AdminPayouts step={step} />;
-      case 12: return <OutroScene step={step} onRestart={restart} />;
-      default: return null;
-    }
-  };
+  const scene = DEMO_SCENES[state.sceneIndex];
+  const caption = scene?.caption ?? '';
+  const totalScenes = DEMO_SCENES.length;
 
   return (
-    <div className="fixed inset-0 z-50 bg-background overflow-auto">
-      <ProgressBar currentScene={state.sceneIndex} totalScenes={totalScenes} />
-      <RoleBadge role={currentScene?.actor ?? null} />
-
-      {/* Scene title banner */}
-      {currentScene && state.sceneIndex > 0 && state.sceneIndex < totalScenes - 1 && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 hidden sm:block">
-          <div className="bg-card border rounded-full px-4 py-1.5 text-xs font-medium text-muted-foreground shadow-sm">
-            {currentScene.title}
-          </div>
-        </div>
-      )}
-
-      <DemoControls
-        isPaused={state.isPaused}
-        currentScene={state.sceneIndex}
-        totalScenes={totalScenes}
-        speed={state.speed}
-        onPause={pause}
-        onResume={resume}
-        onSkip={skip}
-        onCycleSpeed={cycleSpeed}
-      />
-
-      <div className="min-h-screen flex items-center justify-center pt-16 pb-20">
-        <SceneContainer sceneIndex={state.sceneIndex}>
-          {renderScene()}
-        </SceneContainer>
+    <div className="relative h-screen flex flex-col">
+      {/* Scene content layer */}
+      <div className="flex-1 overflow-hidden" style={{ paddingBottom: caption ? 140 : 80 }}>
+        {SCENE_RENDERERS.map((Scene, i) => {
+          const active = i === state.sceneIndex;
+          const step = active ? state.stepIndex : 0;
+          return (
+            <div
+              key={i}
+              className={`absolute inset-0 transition-opacity duration-500 ${active ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}
+              style={{ bottom: caption ? 140 : 80 }}
+            >
+              <div className="h-full overflow-y-auto">
+                {Scene === OutroScene ? (
+                  <OutroScene step={step} onRestart={restart} />
+                ) : (
+                  <Scene step={step} />
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      {state.isPaused && (
-        <div className="fixed inset-0 z-40 bg-black/20 flex items-center justify-center pointer-events-none">
-          <div className="bg-card px-6 py-3 rounded-full shadow-lg border text-sm font-medium text-muted-foreground pointer-events-none">
-            Paused — press Space to resume · → to skip · R to restart
-          </div>
+      {/* Caption bar */}
+      {caption && (
+        <div
+          className="fixed left-0 right-0 z-40 bg-stone-900/95 backdrop-blur-sm border-t border-stone-800/60 px-6 py-3"
+          style={{ bottom: 56 }}
+        >
+          <p className="text-sm text-stone-200 text-center max-w-3xl mx-auto leading-relaxed">
+            {caption}
+          </p>
         </div>
       )}
+
+      {/* Controls */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#0c0907]/95 backdrop-blur-sm border-t border-stone-800/60">
+        {/* Thin progress hairline */}
+        <div className="h-0.5 bg-stone-800/80">
+          <div
+            className="h-full bg-amber-400 transition-all duration-100"
+            style={{
+              width: `${((state.sceneIndex + sceneProgress) / (totalScenes - 1)) * 100}%`,
+            }}
+          />
+        </div>
+        <div className="flex items-center justify-between px-4 py-2.5 max-w-6xl mx-auto">
+          {/* Left: chevron + play + chevron + label */}
+          <div className="flex items-center gap-3 min-w-0">
+            <button
+              onClick={prev}
+              disabled={state.sceneIndex === 0}
+              className="rounded-full p-1.5 text-stone-400 hover:text-amber-300 disabled:opacity-30 transition-colors"
+              aria-label="Previous"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              onClick={togglePlay}
+              className="rounded-full p-1.5 text-stone-400 hover:text-amber-300 transition-colors"
+              aria-label={state.isPaused ? 'Play' : 'Pause'}
+            >
+              {state.isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+            </button>
+            <button
+              onClick={next}
+              disabled={state.sceneIndex === totalScenes - 1}
+              className="rounded-full p-1.5 text-stone-400 hover:text-amber-300 disabled:opacity-30 transition-colors"
+              aria-label="Next"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+            <span className="text-xs text-stone-500 ml-2 hidden sm:block truncate max-w-[180px]">{scene?.title}</span>
+          </div>
+
+          {/* Center: dot indicators */}
+          <div className="flex items-center gap-1.5">
+            {DEMO_SCENES.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => goTo(i)}
+                className={`rounded-full transition-all duration-300 ${
+                  i === state.sceneIndex
+                    ? 'h-2 w-6 bg-amber-400'
+                    : i < state.sceneIndex
+                    ? 'h-2 w-2 bg-amber-700/70'
+                    : 'h-2 w-2 bg-stone-700'
+                }`}
+                aria-label={`Go to scene ${i + 1}`}
+              />
+            ))}
+          </div>
+
+          {/* Right: speed + counter */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={cycleSpeed}
+              className="flex items-center gap-1 rounded-full px-2 py-1 text-[11px] text-stone-400 hover:text-amber-300 transition-colors"
+              aria-label="Cycle playback speed"
+            >
+              <Gauge className="h-3 w-3" />
+              <span className="tabular-nums">{state.speed}×</span>
+            </button>
+            <span className="text-xs text-stone-600 tabular-nums">{state.sceneIndex + 1} / {totalScenes}</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

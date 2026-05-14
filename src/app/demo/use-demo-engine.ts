@@ -10,6 +10,7 @@ export interface DemoScene {
   steps: number;
   actor: ActorRole;
   title: string;
+  caption?: string;
 }
 
 export type DemoSpeed = 0.5 | 1 | 2;
@@ -24,19 +25,19 @@ export interface DemoEngineState {
 
 // 13 scenes covering the full MLM lifecycle.
 export const DEMO_SCENES: DemoScene[] = [
-  { id: 'intro',            duration: 6000,  steps: 3, actor: null,       title: 'The Bee Club' },
-  { id: 'provider-pitch',   duration: 10000, steps: 4, actor: 'provider', title: 'A-Team: Upload Pitch' },
-  { id: 'public-page',      duration: 6000,  steps: 3, actor: 'public',   title: 'Public Catalogue' },
-  { id: 'referrer-present', duration: 9000,  steps: 4, actor: 'referrer', title: 'Bee Team: Present' },
-  { id: 'referrer-submit',  duration: 8000,  steps: 3, actor: 'referrer', title: 'Submit Referral' },
-  { id: 'provider-close',   duration: 8000,  steps: 3, actor: 'provider', title: 'Provider Closes Deal' },
-  { id: 'admin-confirm',    duration: 6000,  steps: 2, actor: 'admin',    title: 'Admin Confirms' },
-  { id: 'split-12',         duration: 14000, steps: 6, actor: 'admin',    title: 'The 12-Line Split' },
-  { id: 'upline-cascade',   duration: 10000, steps: 5, actor: 'admin',    title: 'Upline + Lifetime Sponsor' },
-  { id: 'referrer-wallet',  duration: 9000,  steps: 4, actor: 'referrer', title: 'Wallet · Green/Grey/Black' },
-  { id: 'team-move',        duration: 8000,  steps: 3, actor: 'referrer', title: 'Change L-1 Manager' },
-  { id: 'admin-payouts',    duration: 8000,  steps: 3, actor: 'admin',    title: 'Admin Payouts Queue' },
-  { id: 'outro',            duration: 7000,  steps: 3, actor: null,       title: '1 Deal → 12 Payouts' },
+  { id: 'intro',            duration: 6000,  steps: 3, actor: null,       title: 'Intro',          caption: '' },
+  { id: 'provider-pitch',   duration: 10000, steps: 4, actor: 'provider', title: 'A-Team Pitch',   caption: 'A-Team providers upload 1–4 photos and a 200-word pitch — never any dollar figures. The page auto-publishes at /p/<slug>.' },
+  { id: 'public-page',      duration: 7000,  steps: 3, actor: 'public',   title: 'Public Page',    caption: 'The pitch sits at a public URL — safe to share with any homeowner. No commissions or dollar amounts ever appear here.' },
+  { id: 'referrer-present', duration: 9000,  steps: 4, actor: 'referrer', title: 'Present',        caption: 'A Bee Team referrer toggles presentation mode — full-screen, dark, customer-facing. Same content, no earnings visible.' },
+  { id: 'referrer-submit',  duration: 9000,  steps: 3, actor: 'referrer', title: 'Submit',         caption: 'Submitting the referral freezes the upline snapshot — L-1, L-2, L-3, and the lifetime sponsor are locked in for this deal.' },
+  { id: 'provider-close',   duration: 9000,  steps: 3, actor: 'provider', title: 'Close Deal',     caption: 'The provider accepts the lead (12 PENDING payout rows spawn), then reports the final job value when work completes.' },
+  { id: 'admin-confirm',    duration: 7000,  steps: 2, actor: 'admin',    title: 'Admin Confirm',  caption: 'Club Admin confirms the deal — all 12 PayoutLedger rows flip from PENDING to AVAILABLE in one atomic step.' },
+  { id: 'split-12',         duration: 14000, steps: 6, actor: 'admin',    title: '12-Line Split',  caption: 'Every closed deal splits across the same 12 lines: direct referrer, upline overrides, Club Admin, lifetime sponsor, pools, and platform.' },
+  { id: 'upline-cascade',   duration: 11000, steps: 5, actor: 'admin',    title: 'Upline',         caption: 'Overrides cascade up through the L-1, L-2, L-3 managers — then Club Admin on top. The lifetime sponsor branches off — 1% forever.' },
+  { id: 'referrer-wallet',  duration: 9000,  steps: 4, actor: 'referrer', title: 'Wallet',         caption: 'Each referrer sees three buckets: Green (available), Grey (pending), Black (paid lifetime) — plus the line-by-line breakdown per deal.' },
+  { id: 'team-move',        duration: 9000,  steps: 3, actor: 'referrer', title: 'Team Move',      caption: 'Swap your L-1 manager any time — your member ID and every historical payout snapshot stay frozen. No payout rewrites.' },
+  { id: 'admin-payouts',    duration: 9000,  steps: 3, actor: 'admin',    title: 'Payouts',        caption: 'Club Admin filters the global PayoutLedger by status and bulk-marks rows Paid — debiting wallets atomically.' },
+  { id: 'outro',            duration: 7000,  steps: 3, actor: null,       title: 'Summary',        caption: '' },
 ];
 
 export function useDemoEngine() {
@@ -47,8 +48,10 @@ export function useDemoEngine() {
     isComplete: false,
     speed: 1,
   });
+  const [sceneProgress, setSceneProgress] = useState(0);
 
   const stepTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const currentScene = DEMO_SCENES[state.sceneIndex];
   const totalScenes = DEMO_SCENES.length;
@@ -57,6 +60,10 @@ export function useDemoEngine() {
     if (stepTimerRef.current) {
       clearTimeout(stepTimerRef.current);
       stepTimerRef.current = null;
+    }
+    if (progressTimerRef.current) {
+      clearInterval(progressTimerRef.current);
+      progressTimerRef.current = null;
     }
   }, []);
 
@@ -67,6 +74,7 @@ export function useDemoEngine() {
       }
       return { ...prev, sceneIndex: prev.sceneIndex + 1, stepIndex: 0 };
     });
+    setSceneProgress(0);
   }, []);
 
   const advanceStep = useCallback(() => {
@@ -77,6 +85,7 @@ export function useDemoEngine() {
     });
   }, []);
 
+  // Auto-advance steps within a scene
   useEffect(() => {
     if (state.isPaused || state.isComplete) return;
     const scene = DEMO_SCENES[state.sceneIndex];
@@ -104,6 +113,30 @@ export function useDemoEngine() {
     advanceScene,
   ]);
 
+  // Smooth sceneProgress (for top hairline) — fills 0→1 over the scene's full duration
+  useEffect(() => {
+    if (state.isPaused || state.isComplete) return;
+    const scene = DEMO_SCENES[state.sceneIndex];
+    if (!scene) return;
+
+    // Reset on scene change
+    setSceneProgress(0);
+    const duration = scene.duration / state.speed;
+    const interval = 60;
+    let elapsed = 0;
+    progressTimerRef.current = setInterval(() => {
+      elapsed += interval;
+      setSceneProgress(Math.min(elapsed / duration, 1));
+      if (elapsed >= duration) {
+        if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+      }
+    }, interval);
+
+    return () => {
+      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+    };
+  }, [state.sceneIndex, state.isPaused, state.isComplete, state.speed]);
+
   const pause = useCallback(() => {
     clearTimers();
     setState((prev) => ({ ...prev, isPaused: true }));
@@ -113,16 +146,46 @@ export function useDemoEngine() {
     setState((prev) => ({ ...prev, isPaused: false }));
   }, []);
 
-  const skip = useCallback(() => {
+  const goTo = useCallback((i: number) => {
     clearTimers();
     setState((prev) => ({
-      sceneIndex: Math.min(prev.sceneIndex + 1, DEMO_SCENES.length - 1),
+      ...prev,
+      sceneIndex: Math.max(0, Math.min(i, DEMO_SCENES.length - 1)),
       stepIndex: 0,
-      isPaused: false,
+      isPaused: prev.isPaused,
       isComplete: false,
-      speed: prev.speed,
     }));
+    setSceneProgress(0);
   }, [clearTimers]);
+
+  const next = useCallback(() => {
+    clearTimers();
+    setState((prev) => {
+      if (prev.sceneIndex >= DEMO_SCENES.length - 1) return prev;
+      return {
+        ...prev,
+        sceneIndex: prev.sceneIndex + 1,
+        stepIndex: 0,
+        isComplete: false,
+      };
+    });
+    setSceneProgress(0);
+  }, [clearTimers]);
+
+  const prev = useCallback(() => {
+    clearTimers();
+    setState((p) => ({
+      ...p,
+      sceneIndex: Math.max(0, p.sceneIndex - 1),
+      stepIndex: 0,
+      isComplete: false,
+    }));
+    setSceneProgress(0);
+  }, [clearTimers]);
+
+  const skip = useCallback(() => {
+    next();
+  }, [next]);
 
   const restart = useCallback(() => {
     clearTimers();
@@ -133,7 +196,12 @@ export function useDemoEngine() {
       isComplete: false,
       speed: prev.speed,
     }));
+    setSceneProgress(0);
   }, [clearTimers]);
+
+  const togglePlay = useCallback(() => {
+    setState((p) => ({ ...p, isPaused: !p.isPaused }));
+  }, []);
 
   const cycleSpeed = useCallback(() => {
     setState((prev) => {
@@ -143,30 +211,38 @@ export function useDemoEngine() {
     });
   }, []);
 
+  // Keyboard
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const onKey = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
         e.preventDefault();
-        if (state.isPaused) resume();
-        else pause();
+        togglePlay();
       } else if (e.code === 'ArrowRight') {
         e.preventDefault();
-        skip();
+        next();
+      } else if (e.code === 'ArrowLeft') {
+        e.preventDefault();
+        prev();
       } else if (e.code === 'KeyR') {
         restart();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [state.isPaused, pause, resume, skip, restart]);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [togglePlay, next, prev, restart]);
 
   return {
     state,
     currentScene,
     totalScenes,
+    sceneProgress,
     pause,
     resume,
+    togglePlay,
     skip,
+    next,
+    prev,
+    goTo,
     restart,
     advanceStep,
     advanceScene,

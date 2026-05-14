@@ -1,9 +1,8 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
 import { MockHeader } from '../components/mock-header';
 import { AnnotationBubble } from '../components/annotation-bubble';
-import { Check, X, Share2 } from 'lucide-react';
+import { Check, X, Share2, Lock } from 'lucide-react';
 
 interface Props {
   step: number;
@@ -11,86 +10,93 @@ interface Props {
 
 export function PublicPage({ step }: Props) {
   return (
-    <div className="w-full">
+    <div className="px-6 sm:px-10 py-8 max-w-4xl mx-auto">
       <MockHeader role="public" />
-      <div className="bg-card rounded-b-lg border border-t-0 p-6 space-y-4">
-        <div className="flex items-start justify-between">
+
+      <div className="rounded-xl bg-stone-900/80 border border-stone-700/50 p-5">
+        <div className="flex items-start justify-between mb-4">
           <div>
-            <h2 className="text-2xl font-bold">Sunshine Solar Co</h2>
+            <h2 className="text-2xl font-bold text-white">Sunshine Solar Co</h2>
             <div className="flex gap-2 mt-1">
-              <span className="text-xs px-2 py-0.5 rounded-full bg-muted">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-stone-800 text-stone-300">
                 Solar + Battery
               </span>
-              <span className="text-xs text-muted-foreground">Zip 11201</span>
+              <span className="text-xs text-stone-500">Zip 11201</span>
             </div>
           </div>
-          <button className="hidden md:flex items-center gap-1 text-xs text-muted-foreground border rounded-md px-2 py-1">
+          <button className="hidden md:flex items-center gap-1 text-[11px] text-stone-400 border border-stone-700 rounded-md px-2 py-1 hover:bg-stone-800 transition-colors">
             <Share2 className="h-3 w-3" />
             Share
           </button>
         </div>
 
         {/* Photos */}
-        <div className="grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-4 gap-3 mb-4">
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
-              className="aspect-square rounded-md bg-gradient-to-br from-amber-200 via-orange-200 to-rose-200 flex items-center justify-center animate-demo-fade-in"
-              style={{ animationDelay: `${i * 80}ms` }}
+              className="aspect-square rounded-md bg-gradient-to-br from-amber-300/30 via-orange-300/20 to-rose-300/20 border border-amber-500/15 flex items-center justify-center"
+              style={{
+                opacity: 0,
+                animation: `fadeInUp 600ms cubic-bezier(0.16,1,0.3,1) ${i * 80}ms forwards`,
+              }}
             >
               <span className="text-3xl">☀️</span>
             </div>
           ))}
         </div>
 
-        {/* Pitch */}
+        {/* Pitch text */}
         {step >= 1 && (
-          <Card className="animate-demo-fade-in">
-            <CardContent className="p-4 text-sm leading-relaxed">
-              Whole-home solar + battery installs in as little as 2 days. We
-              handle the permits, the utility paperwork, and the panel upgrade
-              if you need one. Tier-1 panels, 25-year warranty, and financing
-              that beats your current power bill.
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Dos/Donts side by side */}
-        {step >= 1 && (
-          <div className="grid grid-cols-2 gap-3 animate-demo-fade-in">
-            <div className="rounded-md border p-3">
-              <div className="text-xs font-semibold text-emerald-700 flex items-center gap-1 mb-1">
-                <Check className="h-3 w-3" /> Do&apos;s
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Ask about warranty · Get written quote
-              </div>
-            </div>
-            <div className="rounded-md border p-3">
-              <div className="text-xs font-semibold text-red-700 flex items-center gap-1 mb-1">
-                <X className="h-3 w-3" /> Don&apos;ts
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Pay in full upfront · Skip site survey
-              </div>
-            </div>
+          <div className="rounded-md bg-stone-800/50 border border-stone-700/50 p-3 text-sm text-stone-200 leading-relaxed mb-4 animate-[fadeInUp_600ms_cubic-bezier(0.16,1,0.3,1)_forwards]">
+            Whole-home solar + battery installs in as little as 2 days. We handle the permits, the utility paperwork, and the panel upgrade if you need one. Tier-1 panels, 25-year warranty, and financing that beats your current power bill.
           </div>
         )}
 
-        {step >= 2 && (
-          <div className="relative rounded-md border-2 border-primary/30 bg-primary/5 p-3 text-sm font-medium text-center animate-demo-fade-in">
-            <span className="text-muted-foreground text-xs block mb-0.5">
-              What&apos;s NOT here:
-            </span>
-            Commission rates · Dollar figures · Referrer earnings
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-              <AnnotationBubble visible>
-                Safe to share with any homeowner
-              </AnnotationBubble>
+        {/* Dos/Donts */}
+        {step >= 1 && (
+          <div className="grid grid-cols-2 gap-3 mb-4 animate-[fadeInUp_600ms_cubic-bezier(0.16,1,0.3,1)_120ms_both]">
+            <div className="rounded-md bg-amber-500/5 border border-amber-500/20 p-3">
+              <p className="text-xs font-bold text-amber-300 flex items-center gap-1 mb-1 uppercase tracking-wider">
+                <Check className="h-3 w-3" /> Do&apos;s
+              </p>
+              <p className="text-xs text-stone-300">
+                Ask about warranty · Get written quote
+              </p>
+            </div>
+            <div className="rounded-md bg-rose-500/5 border border-rose-500/20 p-3">
+              <p className="text-xs font-bold text-rose-300 flex items-center gap-1 mb-1 uppercase tracking-wider">
+                <X className="h-3 w-3" /> Don&apos;ts
+              </p>
+              <p className="text-xs text-stone-300">
+                Pay in full upfront · Skip site survey
+              </p>
             </div>
           </div>
         )}
       </div>
+
+      {step >= 2 && (
+        <div className="mt-4 relative rounded-xl border-2 border-amber-400/40 bg-amber-400/5 p-4 text-sm font-medium text-center animate-[fadeInUp_600ms_cubic-bezier(0.16,1,0.3,1)_forwards]">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <Lock className="h-3.5 w-3.5 text-amber-300" />
+            <span className="text-amber-300 text-xs uppercase tracking-widest font-bold">What&apos;s NOT here</span>
+          </div>
+          <p className="text-stone-200">Commission rates · Dollar figures · Referrer earnings</p>
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+            <AnnotationBubble visible>
+              Safe to share with any homeowner
+            </AnnotationBubble>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }

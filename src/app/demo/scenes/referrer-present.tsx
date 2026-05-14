@@ -2,8 +2,7 @@
 
 import { MockHeader } from '../components/mock-header';
 import { AnnotationBubble } from '../components/annotation-bubble';
-import { Button } from '@/components/ui/button';
-import { Check, X, Maximize2 } from 'lucide-react';
+import { Check, X, Maximize2, ArrowRight } from 'lucide-react';
 
 interface Props {
   step: number;
@@ -11,29 +10,32 @@ interface Props {
 
 export function ReferrerPresent({ step }: Props) {
   const presentationMode = step >= 1;
+
   return (
-    <div className="w-full">
+    <div className="px-6 sm:px-10 py-8 max-w-4xl mx-auto">
       <MockHeader role="referrer" />
+
       <div
-        className={`rounded-b-lg border border-t-0 p-6 transition-all duration-500 ${
+        className={`rounded-xl border p-5 transition-all duration-500 ${
           presentationMode
-            ? 'bg-slate-950 text-slate-50 border-slate-800'
-            : 'bg-card'
+            ? 'bg-black border-amber-500/30 shadow-2xl shadow-amber-500/10'
+            : 'bg-stone-900/80 border-stone-700/50'
         }`}
       >
         <div className="flex items-center justify-between mb-4">
-          <h2
-            className={`text-xl font-bold ${
-              presentationMode ? 'text-slate-50' : ''
-            }`}
-          >
+          <h2 className="text-2xl font-bold text-white">
             {presentationMode ? 'Sunshine Solar Co' : 'Provider Profile'}
           </h2>
           {step === 0 && (
-            <Button size="sm" className="gap-1">
+            <button className="flex items-center gap-1.5 rounded-md bg-amber-500 px-3 py-1.5 text-xs font-semibold text-stone-950 hover:bg-amber-400 transition-colors shadow shadow-amber-500/30">
               <Maximize2 className="h-3.5 w-3.5" />
               Present to Customer
-            </Button>
+            </button>
+          )}
+          {presentationMode && (
+            <span className="rounded-full bg-amber-400/15 border border-amber-400/40 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-amber-300">
+              Presentation Mode
+            </span>
           )}
         </div>
 
@@ -42,10 +44,10 @@ export function ReferrerPresent({ step }: Props) {
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
-              className={`aspect-square rounded-md flex items-center justify-center transition-all ${
+              className={`aspect-square rounded-md flex items-center justify-center transition-all duration-500 ${
                 presentationMode
-                  ? 'bg-gradient-to-br from-amber-300 via-orange-300 to-rose-300'
-                  : 'bg-gradient-to-br from-amber-200 via-orange-200 to-rose-200'
+                  ? 'bg-gradient-to-br from-amber-300/50 via-orange-300/40 to-rose-300/40 border border-amber-400/30'
+                  : 'bg-gradient-to-br from-amber-300/25 via-orange-300/15 to-rose-300/15 border border-stone-700/40'
               }`}
             >
               <span className="text-4xl">☀️</span>
@@ -54,76 +56,38 @@ export function ReferrerPresent({ step }: Props) {
         </div>
 
         {step >= 2 && (
-          <div
-            className={`rounded-md p-4 text-sm leading-relaxed mb-4 animate-demo-fade-in ${
-              presentationMode
-                ? 'bg-slate-900 border border-slate-700'
-                : 'bg-muted'
-            }`}
-          >
-            Whole-home solar + battery installs in as little as 2 days. Tier-1
-            panels, 25-year warranty, financing that beats your current power
-            bill.
+          <div className={`rounded-md p-4 text-sm leading-relaxed mb-4 animate-[fadeInUp_500ms_cubic-bezier(0.16,1,0.3,1)_forwards] ${
+            presentationMode
+              ? 'bg-stone-900 border border-stone-700/50 text-stone-100'
+              : 'bg-stone-800/50 border border-stone-700/40 text-stone-200'
+          }`}>
+            Whole-home solar + battery installs in as little as 2 days. Tier-1 panels, 25-year warranty, financing that beats your current power bill.
           </div>
         )}
 
         {step >= 2 && (
-          <div className="grid grid-cols-2 gap-3 mb-4 animate-demo-fade-in">
-            <div
-              className={`rounded-md p-3 ${
-                presentationMode
-                  ? 'bg-emerald-950/50 border border-emerald-800'
-                  : 'bg-emerald-50 border border-emerald-200'
-              }`}
-            >
-              <div
-                className={`text-xs font-semibold flex items-center gap-1 mb-1 ${
-                  presentationMode ? 'text-emerald-300' : 'text-emerald-700'
-                }`}
-              >
+          <div className="grid grid-cols-2 gap-3 mb-4 animate-[fadeInUp_500ms_cubic-bezier(0.16,1,0.3,1)_100ms_both]">
+            <div className={`rounded-md p-3 border ${presentationMode ? 'bg-amber-500/10 border-amber-500/30' : 'bg-amber-500/5 border-amber-500/20'}`}>
+              <p className="text-xs font-bold text-amber-300 flex items-center gap-1 mb-1 uppercase tracking-wider">
                 <Check className="h-3 w-3" /> Do
-              </div>
-              <div
-                className={`text-xs ${
-                  presentationMode ? 'text-emerald-200' : 'text-emerald-900'
-                }`}
-              >
-                Ask about warranty
-              </div>
+              </p>
+              <p className="text-xs text-stone-300">Ask about warranty</p>
             </div>
-            <div
-              className={`rounded-md p-3 ${
-                presentationMode
-                  ? 'bg-red-950/50 border border-red-900'
-                  : 'bg-red-50 border border-red-200'
-              }`}
-            >
-              <div
-                className={`text-xs font-semibold flex items-center gap-1 mb-1 ${
-                  presentationMode ? 'text-red-300' : 'text-red-700'
-                }`}
-              >
+            <div className={`rounded-md p-3 border ${presentationMode ? 'bg-rose-500/10 border-rose-500/30' : 'bg-rose-500/5 border-rose-500/20'}`}>
+              <p className="text-xs font-bold text-rose-300 flex items-center gap-1 mb-1 uppercase tracking-wider">
                 <X className="h-3 w-3" /> Don&apos;t
-              </div>
-              <div
-                className={`text-xs ${
-                  presentationMode ? 'text-red-200' : 'text-red-900'
-                }`}
-              >
-                Pay in full upfront
-              </div>
+              </p>
+              <p className="text-xs text-stone-300">Pay in full upfront</p>
             </div>
           </div>
         )}
 
         {step >= 3 && (
-          <div className="pt-3 animate-demo-fade-in">
-            <Button
-              size="lg"
-              className="w-full gap-2 bg-[hsl(var(--gold))] hover:brightness-95 text-slate-950"
-            >
-              Gather Referral Info →
-            </Button>
+          <div className="pt-3 animate-[fadeInUp_500ms_cubic-bezier(0.16,1,0.3,1)_forwards]">
+            <button className="w-full rounded-md bg-amber-500 py-3 text-sm font-semibold text-stone-950 hover:bg-amber-400 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-amber-500/30">
+              Gather Referral Info
+              <ArrowRight className="h-4 w-4" />
+            </button>
             <div className="mt-3 flex justify-center">
               <AnnotationBubble visible>
                 No dollar figures shown · customer-safe
@@ -132,6 +96,13 @@ export function ReferrerPresent({ step }: Props) {
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }
