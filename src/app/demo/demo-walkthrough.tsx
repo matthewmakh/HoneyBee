@@ -16,7 +16,9 @@ import { AdminPayouts } from './scenes/admin-payouts';
 import { OutroScene } from './scenes/outro-scene';
 import { Play, Pause, ChevronLeft, ChevronRight, Gauge } from 'lucide-react';
 
-const SCENE_RENDERERS = [
+type SimpleScene = (props: { step: number }) => React.ReactNode;
+
+const SIMPLE_SCENES: SimpleScene[] = [
   IntroScene,
   ProviderPitch,
   PublicPage,
@@ -29,8 +31,9 @@ const SCENE_RENDERERS = [
   ReferrerWallet,
   TeamMove,
   AdminPayouts,
-  OutroScene,
-] as const;
+];
+
+const OUTRO_INDEX = SIMPLE_SCENES.length; // 12
 
 export function DemoWalkthrough() {
   const {
@@ -52,7 +55,7 @@ export function DemoWalkthrough() {
     <div className="relative h-screen flex flex-col">
       {/* Scene content layer */}
       <div className="flex-1 overflow-hidden" style={{ paddingBottom: caption ? 140 : 80 }}>
-        {SCENE_RENDERERS.map((Scene, i) => {
+        {SIMPLE_SCENES.map((Scene, i) => {
           const active = i === state.sceneIndex;
           const step = active ? state.stepIndex : 0;
           return (
@@ -62,15 +65,27 @@ export function DemoWalkthrough() {
               style={{ bottom: caption ? 140 : 80 }}
             >
               <div className="h-full overflow-y-auto">
-                {Scene === OutroScene ? (
-                  <OutroScene step={step} onRestart={restart} />
-                ) : (
-                  <Scene step={step} />
-                )}
+                <Scene step={step} />
               </div>
             </div>
           );
         })}
+        {/* Outro renders separately because it needs onRestart */}
+        <div
+          className={`absolute inset-0 transition-opacity duration-500 ${
+            state.sceneIndex === OUTRO_INDEX
+              ? 'opacity-100 z-10'
+              : 'opacity-0 z-0 pointer-events-none'
+          }`}
+          style={{ bottom: caption ? 140 : 80 }}
+        >
+          <div className="h-full overflow-y-auto">
+            <OutroScene
+              step={state.sceneIndex === OUTRO_INDEX ? state.stepIndex : 0}
+              onRestart={restart}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Caption bar */}
