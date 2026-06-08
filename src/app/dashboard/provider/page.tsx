@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { getProviderDashboardStats, getProviderJobHistoryStats } from '@/lib/services/leads';
 import { getProviderProfile } from '@/lib/services/providers';
+import { PLACEHOLDER_PROVIDER_ZIP } from '@/lib/services/companies';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { ArrowRight, Inbox, CheckCircle2, Clock, Settings, Check, DollarSign, TrendingUp, Trophy, Target, Calendar, Users } from 'lucide-react';
@@ -31,7 +32,10 @@ export default async function ProviderDashboardPage({ searchParams }: PageProps)
     getProviderJobHistoryStats(session.user.companyId),
   ]);
 
-  const needsProfile = !profile;
+  // A profile is auto-created when an A-Team application is approved (so the
+  // provider shows up in the catalogue immediately). Treat that placeholder as
+  // "needs setup" until they fill in real details.
+  const needsProfile = !profile || profile.zipCode === PLACEHOLDER_PROVIDER_ZIP;
 
   return (
     <div className="space-y-6 md:space-y-8">

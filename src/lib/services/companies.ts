@@ -18,6 +18,28 @@ interface CreateCompanyInput {
 }
 
 /**
+ * Compute the next sequential member ID (HB-NNNNNN).
+ *
+ * IMPORTANT: We must NOT rely on `orderBy: { memberId: 'desc' }` here. Member IDs
+ * are strings, and demo/seed rows use non-numeric formats like `HB-MLM-0001` which
+ * sort *after* `HB-000005` lexically ('M' > '0'). That made the old logic reset the
+ * sequence back to 1 and try to recreate `HB-000001`, throwing a unique-constraint
+ * error on every registration. Instead, scan every member ID, keep only the
+ * canonical `HB-<digits>` ones, and take the true numeric maximum.
+ */
+async function getNextMemberId(): Promise<string> {
+  const companies = await prisma.company.findMany({ select: { memberId: true } });
+  let maxSequence = 0;
+  for (const { memberId } of companies) {
+    const match = memberId.match(/^HB-(\d+)$/);
+    if (match?.[1]) {
+      maxSequence = Math.max(maxSequence, parseInt(match[1], 10));
+    }
+  }
+  return generateMemberId(maxSequence + 1);
+}
+
+/**
  * Create a new company with initial user
  */
 export async function createCompany(input: CreateCompanyInput): Promise<Company> {
@@ -30,49 +52,57 @@ export async function createCompany(input: CreateCompanyInput): Promise<Company>
     throw new Error('Email already registered');
   }
 
-  // Get next member ID
-  const lastCompany = await prisma.company.findFirst({
-    orderBy: { memberId: 'desc' },
-    select: { memberId: true },
-  });
+  const passwordHash = await hash(input.userPassword, 12);
 
-  let nextSequence = 1;
-  if (lastCompany?.memberId) {
-    const match = lastCompany.memberId.match(/HB-(\d+)/);
-    if (match?.[1]) {
-      nextSequence = parseInt(match[1], 10) + 1;
+  // Create company and user in a transaction. Retry on the (rare) chance that
+  // two registrations race for the same sequential member ID.
+  const MAX_ATTEMPTS = 5;
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    const memberId = await getNextMemberId();
+    try {
+      return await prisma.$transaction(async (tx) => {
+        const newCompany = await tx.company.create({
+          data: {
+            name: input.name,
+            memberId,
+            canUseReferrerPortal: input.canUseReferrerPortal,
+            canUseProviderPortal: input.canUseProviderPortal,
+            providerApplicationPending: input.providerApplicationPending ?? false,
+          },
+        });
+
+        await tx.user.create({
+          data: {
+            companyId: newCompany.id,
+            name: input.userName,
+            email: input.userEmail,
+            passwordHash,
+            role: 'USER',
+          },
+        });
+
+        return newCompany;
+      });
+    } catch (error) {
+      // P2002 = unique constraint violation. If it's the memberId racing, retry
+      // with a freshly computed sequence; anything else (e.g. email) bubbles up.
+      const isMemberIdRace =
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        (error as { code?: string }).code === 'P2002' &&
+        String((error as { meta?: { target?: string[] } }).meta?.target ?? '').includes(
+          'memberId'
+        );
+      if (isMemberIdRace && attempt < MAX_ATTEMPTS - 1) {
+        continue;
+      }
+      throw error;
     }
   }
 
-  const memberId = generateMemberId(nextSequence);
-  const passwordHash = await hash(input.userPassword, 12);
-
-  // Create company and user in transaction
-  const company = await prisma.$transaction(async (tx) => {
-    const newCompany = await tx.company.create({
-      data: {
-        name: input.name,
-        memberId,
-        canUseReferrerPortal: input.canUseReferrerPortal,
-        canUseProviderPortal: input.canUseProviderPortal,
-        providerApplicationPending: input.providerApplicationPending ?? false,
-      },
-    });
-
-    await tx.user.create({
-      data: {
-        companyId: newCompany.id,
-        name: input.userName,
-        email: input.userEmail,
-        passwordHash,
-        role: 'USER',
-      },
-    });
-
-    return newCompany;
-  });
-
-  return company;
+  // Unreachable in practice — the loop either returns or throws.
+  throw new Error('Could not allocate a unique member ID. Please try again.');
 }
 
 /**
@@ -188,6 +218,38 @@ export async function getPendingProviderApplications(): Promise<CompanyWithProfi
 }
 
 /**
+ * Sentinel ZIP used by auto-created placeholder provider profiles so the
+ * provider portal knows a profile still needs to be completed. A provider with
+ * this ZIP shows up in the A-Team catalogue immediately but is nudged to finish
+ * setup the first time they sign in.
+ */
+export const PLACEHOLDER_PROVIDER_ZIP = '00000';
+
+/**
+ * Ensure a company has a ProviderProfile so it appears in the A-Team catalogue.
+ * Newly approved providers had no profile, which silently kept them out of the
+ * directory entirely (referrers could never find or refer to them). We create a
+ * minimal *published* placeholder profile they can flesh out in settings.
+ */
+export async function ensureProviderProfile(companyId: string): Promise<void> {
+  const existing = await prisma.providerProfile.findUnique({ where: { companyId } });
+  if (existing) return;
+
+  await prisma.providerProfile.create({
+    data: {
+      companyId,
+      zipCode: PLACEHOLDER_PROVIDER_ZIP,
+      serviceCategories: ['Other'],
+      shortDescription:
+        'New A-Team provider. Profile setup in progress — full details coming soon.',
+      commissionType: 'PERCENT',
+      commissionValue: 10,
+      isPublished: true,
+    },
+  });
+}
+
+/**
  * Approve a provider application (Admin only)
  * Providers automatically get referrer access as well
  */
@@ -196,15 +258,22 @@ export async function approveProviderApplication(companyId: string): Promise<Com
   if (!company) throw new Error('Company not found');
   if (!company.providerApplicationPending) throw new Error('No pending application');
 
-  return prisma.company.update({
+  const updated = await prisma.company.update({
     where: { id: companyId },
     data: {
       canUseProviderPortal: true,
       canUseReferrerPortal: true, // Providers automatically get referrer access
       providerApplicationPending: false,
+      // Tag them as an A-Team provider in the MLM model.
+      teamRole: 'PROVIDER',
       updatedAt: new Date(),
     },
   });
+
+  // Approving an A-Team provider must add them to the catalogue right away.
+  await ensureProviderProfile(companyId);
+
+  return updated;
 }
 
 /**
