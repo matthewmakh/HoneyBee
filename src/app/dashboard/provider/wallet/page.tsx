@@ -1,5 +1,5 @@
 import { requireProviderAccess } from '@/lib/auth';
-import { getProviderOwed } from '@/lib/services/payouts';
+import { getProviderOwed, getLeadSplits } from '@/lib/services/payouts';
 import {
   Card,
   CardContent,
@@ -13,21 +13,28 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui';
+import { BackButton } from '@/components/back-button';
+import { CommissionSplitCard } from '@/components/commission-split';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { TrendingUp, DollarSign, Wallet } from 'lucide-react';
 
 export default async function ProviderWalletPage() {
   const user = await requireProviderAccess();
-  const owed = await getProviderOwed(user.companyId);
+  const [owed, splits] = await Promise.all([
+    getProviderOwed(user.companyId),
+    getLeadSplits(user.companyId, 'provider'),
+  ]);
 
   const roiPct = Math.round(owed.roi * 100);
 
   return (
     <div className="space-y-6">
+      <BackButton href="/dashboard/provider" label="Back to dashboard" />
       <div>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Wallet &amp; ROI</h1>
         <p className="text-sm text-muted-foreground">
-          Track commissions you owe on referrer-closed jobs and your return on investment.
+          Track commissions you owe on referrer-closed jobs, your return on
+          investment, and exactly how each commission was split.
         </p>
       </div>
 
@@ -114,6 +121,35 @@ export default async function ProviderWalletPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Full commission split per job — where every dollar you paid went */}
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold">Commission splits</h2>
+          <p className="text-sm text-muted-foreground">
+            For every job your A-Team closed, here&apos;s exactly how the commission
+            was split across the referrer, management, the club, member benefits, and
+            the platform.
+          </p>
+        </div>
+        {splits.length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center text-sm text-muted-foreground">
+              No commission splits yet. Splits appear once you accept a referral.
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4 lg:grid-cols-2">
+            {splits.map((split) => (
+              <CommissionSplitCard
+                key={split.leadId}
+                split={split}
+                subtitle={`Referred by ${split.referrerName} · #${split.leadId.slice(-6)}`}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

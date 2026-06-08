@@ -281,6 +281,35 @@ export const TEAM_ROLE_LABELS: Record<TeamRole, string> = {
   PROVIDER: 'A-Team Provider',
 };
 
+/**
+ * Human-friendly grouping for "where every penny went" wallet breakdowns.
+ * Maps each of the 12 payout lines to the bucket a member cares about.
+ */
+export const PAYOUT_CATEGORY: Record<PayoutLineType, string> = {
+  DIRECT_REFERRER: 'To the referrer',
+  L1_MANAGER: 'Management team',
+  L2_MANAGER: 'Management team',
+  L3_MANAGER: 'Management team',
+  CLUB_ADMIN: 'To the club',
+  ORIGINAL_SPONSOR_LIFETIME: 'Lifetime sponsor',
+  POOL_BONUS_1: 'Member benefits & pools',
+  POOL_BONUS_2: 'Member benefits & pools',
+  POOL_BONUS_3: 'Member benefits & pools',
+  POOL_BONUS_4: 'Member benefits & pools',
+  POOL_BONUS_5: 'Member benefits & pools',
+  PROVIDER_FEE_OFFSET: 'Platform',
+};
+
+/** Ordered list of the categories above for stable rendering. */
+export const PAYOUT_CATEGORY_ORDER = [
+  'To the referrer',
+  'Management team',
+  'To the club',
+  'Lifetime sponsor',
+  'Member benefits & pools',
+  'Platform',
+] as const;
+
 export const PAYOUT_LINE_LABELS: Record<PayoutLineType, string> = {
   DIRECT_REFERRER: 'Direct Referrer',
   L1_MANAGER: 'L-1 Manager Override',

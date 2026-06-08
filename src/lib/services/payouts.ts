@@ -1,6 +1,98 @@
 import { prisma } from '@/lib/db';
-import type { PayoutLineRow, PayoutStatus } from '@/lib/types';
-import { PAYOUT_LINE_LABELS } from '@/lib/types';
+import type { PayoutLineRow, PayoutStatus, PayoutLineType } from '@/lib/types';
+import { PAYOUT_LINE_LABELS, PAYOUT_CATEGORY } from '@/lib/types';
+
+/**
+ * A single lead's full commission split — every payout line, who it went to, and
+ * which "where every penny went" bucket it belongs to. Used by both wallets so a
+ * Bee Team member or A-Team provider can see the complete breakdown of a deal.
+ */
+export interface LeadSplitLine {
+  id: string;
+  lineType: PayoutLineType;
+  label: string;
+  category: string;
+  beneficiaryName: string | null;
+  amount: number;
+  status: PayoutStatus;
+}
+
+export interface LeadSplit {
+  leadId: string;
+  homeownerName: string;
+  providerName: string;
+  referrerName: string;
+  totalCommission: number;
+  lines: LeadSplitLine[];
+}
+
+/**
+ * Build the full 12-line split for every lead a company is party to, on the
+ * given side. `referrer` → leads they sent; `provider` → leads they worked.
+ */
+export async function getLeadSplits(
+  companyId: string,
+  side: 'referrer' | 'provider'
+): Promise<LeadSplit[]> {
+  const leads = await prisma.lead.findMany({
+    where: side === 'referrer' ? { referrerCompanyId: companyId } : { providerCompanyId: companyId },
+    select: {
+      id: true,
+      homeownerName: true,
+      providerCompany: { select: { name: true } },
+      referrerCompany: { select: { name: true } },
+      payoutLines: {
+        include: { beneficiaryCompany: { select: { name: true } } },
+        orderBy: { lineType: 'asc' },
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return leads
+    .filter((l) => l.payoutLines.length > 0)
+    .map((l) => {
+      const lines: LeadSplitLine[] = l.payoutLines.map((p) => ({
+        id: p.id,
+        lineType: p.lineType,
+        label: PAYOUT_LINE_LABELS[p.lineType],
+        category: PAYOUT_CATEGORY[p.lineType],
+        beneficiaryName: p.beneficiaryCompany?.name ?? null,
+        amount: Number(p.amount),
+        status: p.status,
+      }));
+      return {
+        leadId: l.id,
+        homeownerName: l.homeownerName,
+        providerName: l.providerCompany.name,
+        referrerName: l.referrerCompany.name,
+        totalCommission: lines.reduce((s, x) => s + x.amount, 0),
+        lines,
+      };
+    });
+}
+
+/**
+ * Aggregate a company's own earned/pending payout lines by category, so the
+ * wallet can show "what makes up my money" at a glance.
+ */
+export async function getEarningsByCategory(companyId: string) {
+  const rows = await prisma.payoutLedger.findMany({
+    where: { beneficiaryCompanyId: companyId },
+    select: { lineType: true, amount: true, status: true },
+  });
+  const map = new Map<string, { available: number; pending: number; total: number }>();
+  for (const r of rows) {
+    const category = PAYOUT_CATEGORY[r.lineType];
+    const entry = map.get(category) ?? { available: 0, pending: 0, total: 0 };
+    const amount = Number(r.amount);
+    entry.total += amount;
+    if (r.status === 'AVAILABLE' || r.status === 'PAID') entry.available += amount;
+    if (r.status === 'PENDING_COMPLETION') entry.pending += amount;
+    map.set(category, entry);
+  }
+  return map;
+}
 
 /**
  * All payout rows where `companyId` is the beneficiary — grouped by lead.

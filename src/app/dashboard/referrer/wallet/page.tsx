@@ -1,20 +1,20 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getCompanyBalances, getCompanyWithdrawalRequests } from '@/lib/services/finance';
-import { getPayoutsForBeneficiary, getPayoutSummary } from '@/lib/services/payouts';
+import { getPayoutSummary, getLeadSplits, getEarningsByCategory } from '@/lib/services/payouts';
 import {
   Badge,
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui';
+import { BackButton } from '@/components/back-button';
+import { CommissionSplitCard } from '@/components/commission-split';
 import { formatCurrency } from '@/lib/utils';
 import { WithdrawalDialog } from './withdrawal-dialog';
 import { Clock, CheckCircle, XCircle, Wallet, CircleDollarSign, Sparkles } from 'lucide-react';
-import type { PayoutLineRow, PayoutStatus } from '@/lib/types';
-import { payoutStatusColor } from '@/lib/types';
+import { PAYOUT_CATEGORY_ORDER } from '@/lib/types';
 
 const WITHDRAWAL_STATUS_LABELS = {
   PENDING: 'Pending',
@@ -28,19 +28,6 @@ const WITHDRAWAL_STATUS_VARIANTS = {
   REJECTED: 'destructive',
 } as const;
 
-const PAYOUT_STATUS_LABEL: Record<PayoutStatus, string> = {
-  AVAILABLE: 'Available',
-  PENDING_COMPLETION: 'Pending completion',
-  PAID: 'Paid',
-};
-
-function colorClass(status: PayoutStatus): string {
-  const c = payoutStatusColor(status);
-  if (c === 'green') return 'text-green-700';
-  if (c === 'black') return 'text-foreground';
-  return 'text-muted-foreground';
-}
-
 export default async function WalletPage() {
   const session = await auth();
   if (!session?.user) redirect('/login');
@@ -48,28 +35,28 @@ export default async function WalletPage() {
     redirect('/dashboard');
   }
 
-  const [balances, summary, rows, withdrawals] = await Promise.all([
+  const [balances, summary, splits, byCategory, withdrawals] = await Promise.all([
     getCompanyBalances(session.user.companyId),
     getPayoutSummary(session.user.companyId),
-    getPayoutsForBeneficiary(session.user.companyId),
+    getLeadSplits(session.user.companyId, 'referrer'),
+    getEarningsByCategory(session.user.companyId),
     getCompanyWithdrawalRequests(session.user.companyId),
   ]);
 
-  // Group rows by lead for a "per-job 12-line breakdown" view
-  const byLead = new Map<string, PayoutLineRow[]>();
-  for (const r of rows) {
-    const list = byLead.get(r.leadId) ?? [];
-    list.push(r);
-    byLead.set(r.leadId, list);
-  }
+  const categoryRows = PAYOUT_CATEGORY_ORDER.map((category) => ({
+    category,
+    ...(byCategory.get(category) ?? { available: 0, pending: 0, total: 0 }),
+  })).filter((r) => r.total > 0);
 
   return (
     <div className="space-y-8">
+      <BackButton href="/dashboard/referrer" label="Back to dashboard" />
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Wallet</h1>
           <p className="text-muted-foreground">
-            Your 12-line referral payouts, grouped by job.
+            Your earnings, the commission splits, and where every penny of each
+            referral goes.
           </p>
         </div>
         <WithdrawalDialog cashBalance={balances.cashBalance} />
@@ -123,59 +110,77 @@ export default async function WalletPage() {
         </Card>
       </div>
 
-      {/* 12-line breakdown per job */}
+      {/* Your earnings, separated by commission-split category */}
+      {categoryRows.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="text-xl font-semibold">Your earnings by split</h2>
+          <p className="text-sm text-muted-foreground">
+            Every commission split you personally benefit from — your direct
+            referrals, any management overrides, lifetime sponsor, and pool bonuses.
+          </p>
+          <Card>
+            <CardContent className="p-0">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th className="py-2 px-4 font-medium">Split</th>
+                    <th className="py-2 px-4 font-medium text-right">Available</th>
+                    <th className="py-2 px-4 font-medium text-right">Pending</th>
+                    <th className="py-2 px-4 font-medium text-right">Lifetime</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categoryRows.map((r) => (
+                    <tr key={r.category} className="border-b last:border-0">
+                      <td className="py-2 px-4">{r.category}</td>
+                      <td className="py-2 px-4 text-right text-green-700">
+                        {formatCurrency(r.available)}
+                      </td>
+                      <td className="py-2 px-4 text-right text-muted-foreground">
+                        {formatCurrency(r.pending)}
+                      </td>
+                      <td className="py-2 px-4 text-right font-medium">
+                        {formatCurrency(r.total)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Full split per referral — "where every penny went" */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Payout lines by job</h2>
-        {byLead.size === 0 ? (
+        <div>
+          <h2 className="text-xl font-semibold">Where every penny goes</h2>
+          <p className="text-sm text-muted-foreground">
+            The complete commission split for each of your referrals — to you, your
+            management team, the club, member benefits, and the platform.
+          </p>
+        </div>
+        {splits.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center text-sm text-muted-foreground">
-              No payout lines yet. Your first completed referral will populate this list.
+              No commission splits yet. Once an A-Team accepts one of your referrals,
+              the full breakdown shows up here.
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
-            {[...byLead.entries()].map(([leadId, lines]) => {
-              const total = lines.reduce((s, l) => s + l.amount, 0);
-              return (
-                <Card key={leadId}>
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-baseline">
-                      <CardTitle className="text-base">Lead {leadId.slice(-6)}</CardTitle>
-                      <span className="text-sm font-semibold">
-                        {formatCurrency(total)}
-                      </span>
-                    </div>
-                    <CardDescription>
-                      {lines.length} payout lines for this referral
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <table className="w-full text-sm">
-                      <tbody>
-                        {lines.map((l) => (
-                          <tr key={l.id} className="border-t">
-                            <td className="py-1.5 pr-4">{l.label}</td>
-                            <td className={`py-1.5 pr-4 text-xs ${colorClass(l.status)}`}>
-                              {PAYOUT_STATUS_LABEL[l.status]}
-                            </td>
-                            <td
-                              className={`py-1.5 text-right font-medium ${colorClass(l.status)}`}
-                            >
-                              {formatCurrency(l.amount)}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </CardContent>
-                </Card>
-              );
-            })}
+          <div className="grid gap-4 lg:grid-cols-2">
+            {splits.map((split) => (
+              <CommissionSplitCard
+                key={split.leadId}
+                split={split}
+                subtitle={`Worked by ${split.providerName} · #${split.leadId.slice(-6)}`}
+              />
+            ))}
           </div>
         )}
       </div>
 
-      {/* Withdrawals (unchanged) */}
+      {/* Withdrawals */}
       {withdrawals.length > 0 && (
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">Withdrawal Requests</h2>
