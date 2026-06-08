@@ -1,5 +1,35 @@
 import { prisma } from '@/lib/db';
-import type { Company, TeamNode, UplineSnapshot, TeamRole } from '@/lib/types';
+import type { Company, TeamNode, UplineSnapshot, TeamRole, CompanyContact } from '@/lib/types';
+
+const PRIMARY_CONTACT_SELECT = {
+  users: {
+    select: { name: true, email: true, phone: true },
+    orderBy: { createdAt: 'asc' as const },
+    take: 1,
+  },
+};
+
+/**
+ * Map each company id to its primary (oldest) user contact. Powers the
+ * upline/downline "contact this person" links.
+ */
+export async function getContactsForCompanies(
+  ids: string[]
+): Promise<Map<string, CompanyContact>> {
+  const map = new Map<string, CompanyContact>();
+  if (ids.length === 0) return map;
+  const users = await prisma.user.findMany({
+    where: { companyId: { in: ids } },
+    select: { companyId: true, name: true, email: true, phone: true },
+    orderBy: { createdAt: 'asc' },
+  });
+  for (const u of users) {
+    if (!map.has(u.companyId)) {
+      map.set(u.companyId, { name: u.name, email: u.email, phone: u.phone });
+    }
+  }
+  return map;
+}
 
 // ============================================================================
 // Upline / Downline
@@ -104,33 +134,36 @@ export async function getDownlineTree(
 ): Promise<TeamNode> {
   const root = await prisma.company.findUnique({
     where: { id: rootCompanyId },
-    select: { id: true, name: true, memberId: true, teamRole: true },
+    select: { id: true, name: true, memberId: true, teamRole: true, ...PRIMARY_CONTACT_SELECT },
   });
   if (!root) throw new Error('Root company not found');
 
-  async function build(node: NonNullable<typeof root>, depth: number): Promise<TeamNode> {
-    if (depth >= maxDepth) {
-      return {
-        id: node.id,
-        name: node.name,
-        memberId: node.memberId,
-        teamRole: node.teamRole,
-        directDownline: [],
-      };
-    }
-    const children = await prisma.company.findMany({
-      where: { l1ManagerCompanyId: node.id },
-      select: { id: true, name: true, memberId: true, teamRole: true },
-      orderBy: { name: 'asc' },
-    });
-    const built = await Promise.all(children.map((c) => build(c, depth + 1)));
+  type Row = NonNullable<typeof root>;
+  const toNode = (node: Row, directDownline: TeamNode[]): TeamNode => {
+    const contact = node.users[0];
     return {
       id: node.id,
       name: node.name,
       memberId: node.memberId,
       teamRole: node.teamRole,
-      directDownline: built,
+      contactName: contact?.name ?? null,
+      email: contact?.email ?? null,
+      phone: contact?.phone ?? null,
+      directDownline,
     };
+  };
+
+  async function build(node: Row, depth: number): Promise<TeamNode> {
+    if (depth >= maxDepth) {
+      return toNode(node, []);
+    }
+    const children = await prisma.company.findMany({
+      where: { l1ManagerCompanyId: node.id },
+      select: { id: true, name: true, memberId: true, teamRole: true, ...PRIMARY_CONTACT_SELECT },
+      orderBy: { name: 'asc' },
+    });
+    const built = await Promise.all(children.map((c) => build(c, depth + 1)));
+    return toNode(node, built);
   }
 
   return build(root, 0);

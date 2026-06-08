@@ -1,6 +1,6 @@
 import { requireSuperAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { getDownlineTree } from '@/lib/services/teams';
+import { getDownlineTree, listManagersAndAbove } from '@/lib/services/teams';
 import {
   Card,
   CardContent,
@@ -11,6 +11,8 @@ import {
 } from '@/components/ui';
 import { TEAM_ROLE_LABELS } from '@/lib/types';
 import { TeamTree } from '@/components/team-tree';
+import { AssignManagerForm } from './assign-manager-form';
+import { UserX } from 'lucide-react';
 
 export default async function AdminTeamPage() {
   await requireSuperAdmin();
@@ -22,7 +24,17 @@ export default async function AdminTeamPage() {
     orderBy: { name: 'asc' },
   });
 
-  const trees = await Promise.all(admins.map((a) => getDownlineTree(a.id, 6)));
+  const [trees, managers] = await Promise.all([
+    Promise.all(admins.map((a) => getDownlineTree(a.id, 6))),
+    listManagersAndAbove(),
+  ]);
+
+  const managerOptions = managers.map((m) => ({
+    id: m.id,
+    name: m.name,
+    memberId: m.memberId,
+    teamRole: TEAM_ROLE_LABELS[m.teamRole],
+  }));
 
   const orphans = await prisma.company.findMany({
     where: {
@@ -43,9 +55,45 @@ export default async function AdminTeamPage() {
       <div>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Team</h1>
         <p className="text-sm text-muted-foreground">
-          Full MLM tree. Move members via the member&apos;s referrer team page.
+          Full MLM tree. Assign managers to unassigned members below.
         </p>
       </div>
+
+      {/* Unassigned members first so admins can act on them right away. */}
+      <Card className={orphans.length > 0 ? 'border-amber-300' : undefined}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UserX className="h-5 w-5 text-amber-600" />
+            Unassigned members
+          </CardTitle>
+          <CardDescription>
+            Members with no L-1 Manager report directly to the club until one is
+            assigned. {orphans.length} member{orphans.length !== 1 ? 's' : ''} need a
+            manager.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          {orphans.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Every member currently has a manager. 🎉
+            </p>
+          ) : (
+            orphans.map((o) => (
+              <div
+                key={o.id}
+                className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 border rounded-md p-3 text-sm"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{o.name}</span>
+                  <span className="text-xs text-muted-foreground">{o.memberId}</span>
+                  <Badge variant="outline">{TEAM_ROLE_LABELS[o.teamRole]}</Badge>
+                </div>
+                <AssignManagerForm memberCompanyId={o.id} managers={managerOptions} />
+              </div>
+            ))
+          )}
+        </CardContent>
+      </Card>
 
       {trees.map((t) => (
         <Card key={t.id}>
@@ -54,33 +102,10 @@ export default async function AdminTeamPage() {
             <CardDescription>{t.memberId} · Club Admin root</CardDescription>
           </CardHeader>
           <CardContent>
-            <TeamTree node={t} />
+            <TeamTree node={t} showContact />
           </CardContent>
         </Card>
       ))}
-
-      {orphans.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Unassigned members</CardTitle>
-            <CardDescription>Members with no L-1 Manager set.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-1">
-            {orphans.map((o) => (
-              <div
-                key={o.id}
-                className="flex justify-between items-center border rounded-md p-2 text-sm"
-              >
-                <div>
-                  <span className="font-medium">{o.name}</span>
-                  <span className="ml-2 text-xs text-muted-foreground">{o.memberId}</span>
-                </div>
-                <Badge variant="outline">{TEAM_ROLE_LABELS[o.teamRole]}</Badge>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import {
   getUplineCompanies,
   getDownlineTree,
   listManagersAndAbove,
+  getContactsForCompanies,
 } from '@/lib/services/teams';
 import { prisma } from '@/lib/db';
 import {
@@ -13,9 +14,11 @@ import {
   CardTitle,
   Badge,
 } from '@/components/ui';
+import { BackButton } from '@/components/back-button';
 import { TEAM_ROLE_LABELS } from '@/lib/types';
 import { TeamTree } from '@/components/team-tree';
 import { ChangeManagerForm } from './change-manager-form';
+import { Mail, Phone } from 'lucide-react';
 
 export default async function TeamPage() {
   const user = await requireReferrerAccess();
@@ -36,6 +39,8 @@ export default async function TeamPage() {
     listManagersAndAbove(),
   ]);
 
+  const uplineContacts = await getContactsForCompanies(upline.map((u) => u.id));
+
   const managerOptions = managers
     .filter((m) => m.id !== user.companyId)
     .map((m) => ({
@@ -47,10 +52,12 @@ export default async function TeamPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
+      <BackButton href="/dashboard/referrer" label="Back to dashboard" />
       <div>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">My Team</h1>
         <p className="text-sm text-muted-foreground">
-          See your upline, your Bee Team downline, and change your L-1 Manager.
+          See your upline and your Bee Team downline, contact anyone directly, and
+          change your L-1 Manager.
         </p>
       </div>
 
@@ -81,21 +88,48 @@ export default async function TeamPage() {
             </p>
           ) : (
             <ol className="space-y-2">
-              {upline.map((u, i) => (
-                <li
-                  key={u.id}
-                  className="flex items-center justify-between border rounded-md p-3"
-                >
-                  <div>
-                    <div className="text-xs text-muted-foreground">
-                      Level {i + 1}
+              {upline.map((u, i) => {
+                const contact = uplineContacts.get(u.id);
+                return (
+                  <li
+                    key={u.id}
+                    className="flex items-center justify-between border rounded-md p-3 gap-3"
+                  >
+                    <div className="min-w-0">
+                      <div className="text-xs text-muted-foreground">
+                        Level {i + 1}
+                      </div>
+                      <div className="font-medium">{u.name}</div>
+                      <div className="text-xs text-muted-foreground">{u.memberId}</div>
+                      {contact && (
+                        <div className="mt-1 flex flex-wrap items-center gap-3 text-xs">
+                          {contact.email && (
+                            <a
+                              href={`mailto:${contact.email}`}
+                              className="inline-flex items-center gap-1 text-primary hover:underline"
+                            >
+                              <Mail className="h-3.5 w-3.5" />
+                              {contact.email}
+                            </a>
+                          )}
+                          {contact.phone && (
+                            <a
+                              href={`tel:${contact.phone}`}
+                              className="inline-flex items-center gap-1 text-primary hover:underline"
+                            >
+                              <Phone className="h-3.5 w-3.5" />
+                              {contact.phone}
+                            </a>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <div className="font-medium">{u.name}</div>
-                    <div className="text-xs text-muted-foreground">{u.memberId}</div>
-                  </div>
-                  <Badge variant="outline">{TEAM_ROLE_LABELS[u.teamRole]}</Badge>
-                </li>
-              ))}
+                    <Badge variant="outline" className="shrink-0">
+                      {TEAM_ROLE_LABELS[u.teamRole]}
+                    </Badge>
+                  </li>
+                );
+              })}
             </ol>
           )}
         </CardContent>
@@ -116,7 +150,7 @@ export default async function TeamPage() {
               As members join under you, they&apos;ll appear here.
             </p>
           ) : (
-            <TeamTree node={tree} />
+            <TeamTree node={tree} showContact />
           )}
         </CardContent>
       </Card>
