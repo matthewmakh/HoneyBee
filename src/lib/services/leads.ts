@@ -363,6 +363,50 @@ export async function getLeadById(leadId: string): Promise<LeadWithCompanies | n
   });
 }
 
+/**
+ * Get a lead with both parties' primary contact (name/email/phone) and notes,
+ * for the shared lead-detail page. Lets the Bee Team see who is working their
+ * referral and lets the A-Team follow up with whoever sent it.
+ */
+export async function getLeadWithContacts(leadId: string) {
+  return prisma.lead.findUnique({
+    where: { id: leadId },
+    include: {
+      providerCompany: {
+        include: {
+          users: {
+            select: { name: true, email: true, phone: true },
+            orderBy: { createdAt: 'asc' },
+            take: 1,
+          },
+          providerProfile: {
+            select: {
+              commissionType: true,
+              commissionValue: true,
+              serviceCategories: true,
+              zipCode: true,
+              publicSlug: true,
+            },
+          },
+        },
+      },
+      referrerCompany: {
+        include: {
+          users: {
+            select: { name: true, email: true, phone: true },
+            orderBy: { createdAt: 'asc' },
+            take: 1,
+          },
+        },
+      },
+      notes: {
+        include: { authorCompany: { select: { name: true } } },
+        orderBy: { createdAt: 'desc' },
+      },
+    },
+  });
+}
+
 // ============================================================================
 // Dashboard Statistics
 // ============================================================================

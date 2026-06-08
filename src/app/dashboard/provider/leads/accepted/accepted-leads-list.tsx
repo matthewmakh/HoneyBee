@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -25,7 +26,7 @@ import type { LeadWithCompaniesNotesAndPriceRequests } from '@/lib/types';
 import { markJobCompletedAction } from './actions';
 import { LeadNotes } from './lead-notes';
 import { PriceChangeRequestButton } from './price-change-request';
-import { CheckCircle, Phone, MapPin, User, DollarSign, TrendingUp } from 'lucide-react';
+import { CheckCircle, Phone, MapPin, User, DollarSign, TrendingUp, ChevronRight } from 'lucide-react';
 
 interface AcceptedLeadsListProps {
   leads: LeadWithCompaniesNotesAndPriceRequests[];
@@ -163,6 +164,13 @@ export function AcceptedLeadsList({ leads }: AcceptedLeadsListProps) {
                     <User className="h-3 w-3" />
                     Accepted on {formatDate(lead.updatedAt)}
                   </div>
+                  <Link
+                    href={`/dashboard/leads/${lead.id}`}
+                    className="inline-flex items-center text-primary hover:underline"
+                  >
+                    View full details
+                    <ChevronRight className="h-4 w-4" />
+                  </Link>
                 </div>
               </CardContent>
               <CardFooter className="flex flex-wrap justify-between gap-2">

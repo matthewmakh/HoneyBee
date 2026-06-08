@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Card,
   CardContent,
@@ -23,7 +24,7 @@ import {
 import { formatDate, formatCurrency } from '@/lib/utils';
 import type { LeadWithCompanies } from '@/lib/types';
 import { acceptLeadAction, rejectLeadAction } from './actions';
-import { Check, X, Phone, MapPin, User, DollarSign } from 'lucide-react';
+import { Check, X, Phone, MapPin, User, DollarSign, ChevronRight } from 'lucide-react';
 
 interface NewLeadsListProps {
   leads: LeadWithCompanies[];
@@ -136,7 +137,15 @@ export function NewLeadsList({ leads }: NewLeadsListProps) {
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="flex justify-end gap-2">
+            <CardFooter className="flex flex-wrap justify-between gap-2">
+              <Link
+                href={`/dashboard/leads/${lead.id}`}
+                className="inline-flex items-center text-sm text-primary hover:underline"
+              >
+                View full details
+                <ChevronRight className="h-4 w-4" />
+              </Link>
+              <div className="flex gap-2">
               <Button
                 variant="outline"
                 onClick={() => handleReject(lead.id)}
@@ -152,6 +161,7 @@ export function NewLeadsList({ leads }: NewLeadsListProps) {
                 <Check className="mr-2 h-4 w-4" />
                 Accept
               </Button>
+              </div>
             </CardFooter>
           </Card>
         ))}

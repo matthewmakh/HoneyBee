@@ -82,28 +82,33 @@ export default async function ProviderDashboardPage({ searchParams }: PageProps)
         </Card>
       )}
 
-      {/* Stats Cards */}
+      {/* Stats Cards — each links to the matching lead list (concern: click a
+          lead category to see new / working / completed leads) */}
       <div className="grid gap-3 md:gap-4 grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">New Leads</CardTitle>
-            <Inbox className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.newLeadsCount}</div>
-            <p className="text-xs text-muted-foreground">Awaiting your response</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Accepted</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.acceptedLeadsCount}</div>
-            <p className="text-xs text-muted-foreground">In progress</p>
-          </CardContent>
-        </Card>
+        <Link href="/dashboard/provider/leads/new" className="block">
+          <Card className="transition-colors hover:border-primary/40">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">New Leads</CardTitle>
+              <Inbox className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.newLeadsCount}</div>
+              <p className="text-xs text-muted-foreground">Just came in — respond</p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/dashboard/provider/leads/accepted" className="block">
+          <Card className="transition-colors hover:border-primary/40">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Working</CardTitle>
+              <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.acceptedLeadsCount}</div>
+              <p className="text-xs text-muted-foreground">Accepted / in progress</p>
+            </CardContent>
+          </Card>
+        </Link>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Awaiting Confirmation</CardTitle>
@@ -114,20 +119,22 @@ export default async function ProviderDashboardPage({ searchParams }: PageProps)
             <p className="text-xs text-muted-foreground">Pending admin review</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed</CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.completedDealsCount}</div>
-            <p className="text-xs text-muted-foreground">Total confirmed deals</p>
-          </CardContent>
-        </Card>
+        <Link href="/dashboard/provider/leads/completed" className="block">
+          <Card className="transition-colors hover:border-primary/40">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Completed</CardTitle>
+              <CheckCircle2 className="h-4 w-4 text-green-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.completedDealsCount}</div>
+              <p className="text-xs text-muted-foreground">Sold &amp; lost history</p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
+      <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base md:text-lg">New Leads</CardTitle>
@@ -150,7 +157,7 @@ export default async function ProviderDashboardPage({ searchParams }: PageProps)
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base md:text-lg">Accepted Leads</CardTitle>
+            <CardTitle className="text-base md:text-lg">Leads You&apos;re Working</CardTitle>
             <CardDescription className="text-xs md:text-sm">
               Mark jobs as completed when done
             </CardDescription>
@@ -159,6 +166,22 @@ export default async function ProviderDashboardPage({ searchParams }: PageProps)
             <Link href="/dashboard/provider/leads/accepted">
               <Button variant="outline" className="w-full">
                 Manage Accepted Leads
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base md:text-lg">Completed &amp; Lost</CardTitle>
+            <CardDescription className="text-xs md:text-sm">
+              Your sold jobs and declined leads
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/dashboard/provider/leads/completed">
+              <Button variant="outline" className="w-full">
+                View History
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
@@ -273,6 +296,7 @@ export default async function ProviderDashboardPage({ searchParams }: PageProps)
                   <TableHead className="text-right">Job Value</TableHead>
                   <TableHead className="text-right">Commission Paid</TableHead>
                   <TableHead>Completed</TableHead>
+                  <TableHead></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -289,6 +313,14 @@ export default async function ProviderDashboardPage({ searchParams }: PageProps)
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {formatDate(job.completedAt)}
+                    </TableCell>
+                    <TableCell>
+                      <Link
+                        href={`/dashboard/leads/${job.id}`}
+                        className="text-primary hover:underline text-sm"
+                      >
+                        Details
+                      </Link>
                     </TableCell>
                   </TableRow>
                 ))}
