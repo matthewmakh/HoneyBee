@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { getReferrerDashboardStats, getReferrerJobHistoryStats } from '@/lib/services/leads';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { formatCurrency, formatDate } from '@/lib/utils';
-import { ArrowRight, DollarSign, Gift, Send, CheckCircle, Clock, TrendingUp, Trophy, Star, Target, Calendar } from 'lucide-react';
+import { ArrowRight, DollarSign, Gift, Send, CheckCircle, Clock, TrendingUp, Trophy, Star, Target, Calendar, Megaphone } from 'lucide-react';
 
 export default async function ReferrerDashboardPage() {
   const session = await auth();
@@ -31,10 +31,10 @@ export default async function ReferrerDashboardPage() {
             Track your referrals and earnings
           </p>
         </div>
-        <Link href="/dashboard/referrer/providers" className="hidden sm:block">
-          <Button>
-            Find Providers
-            <ArrowRight className="ml-2 h-4 w-4" />
+        <Link href="/dashboard/referrer/refer" className="hidden sm:block">
+          <Button className="bg-amber-400 text-slate-900 hover:bg-amber-300">
+            <Megaphone className="mr-2 h-4 w-4" />
+            Refer a Customer
           </Button>
         </Link>
       </div>
@@ -161,18 +161,37 @@ export default async function ReferrerDashboardPage() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-2">
+      <div className="grid gap-3 md:gap-4 grid-cols-1 md:grid-cols-3">
+        <Card className="border-amber-300 bg-amber-50/60 dark:bg-amber-950/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base md:text-lg flex items-center gap-2">
+              <Megaphone className="h-4 w-4 text-amber-600" />
+              Refer a Customer
+            </CardTitle>
+            <CardDescription className="text-xs md:text-sm">
+              Guided wizard: pick 3 products, review the pitch, then submit
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/dashboard/referrer/refer">
+              <Button className="w-full bg-amber-400 text-slate-900 hover:bg-amber-300">
+                Start a Referral
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base md:text-lg">Provider Directory</CardTitle>
+            <CardTitle className="text-base md:text-lg">A-Team Catalog</CardTitle>
             <CardDescription className="text-xs md:text-sm">
-              Browse providers for your referrals
+              Browse the full provider directory
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Link href="/dashboard/referrer/providers">
               <Button variant="outline" className="w-full">
-                Browse Providers
+                Browse Catalog
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>

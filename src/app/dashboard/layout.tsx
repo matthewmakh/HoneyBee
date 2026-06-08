@@ -11,22 +11,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  Tabs,
-  TabsList,
-  TabsTrigger,
 } from '@/components/ui';
 import { SignOutButton } from '@/components/sign-out-button';
+import { PortalSwitcher } from '@/components/portal-switcher';
 import { getInitials } from '@/lib/utils';
 import {
   Wallet,
   Clock,
   Users,
-  Briefcase,
-  Send,
   Settings,
   Home,
   Network,
   Upload,
+  Megaphone,
 } from 'lucide-react';
 
 export default async function DashboardLayout({
@@ -67,23 +64,18 @@ export default async function DashboardLayout({
               <span className="font-semibold hidden sm:inline-block">Honeybee</span>
             </Link>
 
-            {/* Portal Tabs - Desktop */}
-            {showBothPortals && (
-              <Tabs defaultValue="referrer" className="hidden md:block">
-                <TabsList>
-                  <TabsTrigger value="referrer" asChild>
-                    <Link href="/dashboard/referrer">Referrer</Link>
-                  </TabsTrigger>
-                  <TabsTrigger value="provider" asChild>
-                    <Link href="/dashboard/provider">Provider</Link>
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            )}
+            {/* Portal Toggle - Desktop (only when the member can use both) */}
+            {showBothPortals && <PortalSwitcher className="hidden md:inline-flex" />}
 
-            {/* Wallet + Team links for referrers - Desktop */}
+            {/* Refer wizard + Wallet + Team links for referrers - Desktop */}
             {canUseReferrerPortal && (
               <div className="hidden md:flex items-center gap-1">
+                <Link href="/dashboard/referrer/refer">
+                  <Button size="sm" className="gap-1.5 bg-amber-400 text-slate-900 hover:bg-amber-300">
+                    <Megaphone className="h-4 w-4" />
+                    Refer
+                  </Button>
+                </Link>
                 <Link href="/dashboard/referrer/wallet">
                   <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
                     <Wallet className="h-4 w-4" />
@@ -161,21 +153,8 @@ export default async function DashboardLayout({
       {/* Mobile Portal Switcher - Shows when user has access to both portals */}
       {showBothPortals && (
         <div className="md:hidden sticky top-14 z-40 bg-background border-b">
-          <div className="container mx-auto px-4 py-2">
-            <div className="flex gap-2">
-              <Link href="/dashboard/referrer" className="flex-1">
-                <Button variant="outline" size="sm" className="w-full gap-2 text-xs">
-                  <Send className="h-3.5 w-3.5" />
-                  Referrer Portal
-                </Button>
-              </Link>
-              <Link href="/dashboard/provider" className="flex-1">
-                <Button variant="outline" size="sm" className="w-full gap-2 text-xs">
-                  <Briefcase className="h-3.5 w-3.5" />
-                  Provider Portal
-                </Button>
-              </Link>
-            </div>
+          <div className="container mx-auto px-4 py-2 flex justify-center">
+            <PortalSwitcher className="w-full max-w-sm [&>a]:flex-1" />
           </div>
         </div>
       )}
@@ -199,11 +178,18 @@ export default async function DashboardLayout({
           {canUseReferrerPortal && (
             <>
               <Link
+                href="/dashboard/referrer/refer"
+                className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-amber-600 hover:text-amber-700 transition-colors"
+              >
+                <Megaphone className="h-5 w-5" />
+                <span className="text-[10px] font-semibold">Refer</span>
+              </Link>
+              <Link
                 href="/dashboard/referrer/providers"
                 className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Users className="h-5 w-5" />
-                <span className="text-[10px]">Providers</span>
+                <span className="text-[10px]">Catalog</span>
               </Link>
               <Link
                 href="/dashboard/referrer/team"

@@ -77,6 +77,17 @@
   * {
     @apply border-border;
   }
+  /* Larger base font for readability. Tailwind sizing is rem-based, so bumping
+     the root font-size scales typography (and spacing proportionally) across the
+     whole app. ~17px on desktop, slightly smaller on very small screens. */
+  html {
+    font-size: 16.5px;
+  }
+  @media (min-width: 768px) {
+    html {
+      font-size: 17.5px;
+    }
+  }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
