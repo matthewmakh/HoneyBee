@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getProviderLeads } from '@/lib/services/leads';
 import { NewLeadsList } from './new-leads-list';
 import { serializeDecimal } from '@/lib/utils';
+import { BackButton } from '@/components/back-button';
 
 export default async function NewLeadsPage() {
   const session = await auth();
@@ -19,6 +20,7 @@ export default async function NewLeadsPage() {
 
   return (
     <div className="space-y-6">
+      <BackButton href="/dashboard/provider" label="Back to dashboard" />
       <div>
         <h1 className="text-3xl font-bold tracking-tight">New Leads</h1>
         <p className="text-muted-foreground">

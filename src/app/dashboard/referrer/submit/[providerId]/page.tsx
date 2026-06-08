@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import { getProviderProfile } from '@/lib/services/providers';
 import { SubmitLeadForm } from './submit-lead-form';
 import { Card, CardDescription, CardHeader, CardTitle, Badge } from '@/components/ui';
+import { BackButton } from '@/components/back-button';
 import { formatCurrency } from '@/lib/utils';
 
 interface PageProps {
@@ -34,6 +35,7 @@ export default async function SubmitLeadPage({ params }: PageProps) {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      <BackButton href="/dashboard/referrer/providers" label="Back to catalog" />
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Submit Referral</h1>
         <p className="text-muted-foreground">

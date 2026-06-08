@@ -5,6 +5,7 @@ import { getCompanyWithProfile } from '@/lib/services/companies';
 import { ProviderProfileForm } from './provider-profile-form';
 import { SERVICE_CATEGORIES } from '@/lib/types';
 import { serializeDecimal } from '@/lib/utils';
+import { BackButton } from '@/components/back-button';
 
 export default async function ProviderSettingsPage() {
   const session = await auth();
@@ -24,6 +25,7 @@ export default async function ProviderSettingsPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      <BackButton href="/dashboard/provider" label="Back to dashboard" />
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Provider Profile</h1>
         <p className="text-muted-foreground">

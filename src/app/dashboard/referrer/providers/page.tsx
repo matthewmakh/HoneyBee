@@ -5,6 +5,7 @@ import { getProvidersRatingStats } from '@/lib/services/reviews';
 import { ProviderDirectory } from './provider-directory';
 import { ProviderDirectorySkeleton } from './provider-directory-skeleton';
 import { serializeDecimal } from '@/lib/utils';
+import { BackButton } from '@/components/back-button';
 import { Suspense } from 'react';
 
 interface PageProps {
@@ -93,10 +94,11 @@ export default async function ProvidersPage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-6">
+      <BackButton href="/dashboard/referrer" label="Back to dashboard" />
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Provider Directory</h1>
+        <h1 className="text-3xl font-bold tracking-tight">A-Team Catalog</h1>
         <p className="text-muted-foreground">
-          Find service providers and submit referrals
+          Browse service providers and submit referrals
         </p>
       </div>
 

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { getProviderLeadsWithNotes } from '@/lib/services/leads';
 import { AcceptedLeadsList } from './accepted-leads-list';
 import { serializeDecimal } from '@/lib/utils';
+import { BackButton } from '@/components/back-button';
 import type { LeadWithCompaniesNotesAndPriceRequests } from '@/lib/types';
 
 export default async function AcceptedLeadsPage() {
@@ -20,6 +21,7 @@ export default async function AcceptedLeadsPage() {
 
   return (
     <div className="space-y-6">
+      <BackButton href="/dashboard/provider" label="Back to dashboard" />
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Accepted Leads</h1>
         <p className="text-muted-foreground">

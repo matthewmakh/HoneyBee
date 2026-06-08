@@ -1,6 +1,7 @@
 import { requireProviderAccess } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { PitchForm } from './pitch-form';
+import { BackButton } from '@/components/back-button';
 
 export default async function PitchPage() {
   const user = await requireProviderAccess();
@@ -10,6 +11,7 @@ export default async function PitchPage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
+      <BackButton href="/dashboard/provider" label="Back to dashboard" />
       <div>
         <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Sales Pitch</h1>
         <p className="text-sm text-muted-foreground">
