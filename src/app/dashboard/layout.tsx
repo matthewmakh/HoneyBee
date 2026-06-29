@@ -14,16 +14,11 @@ import {
 } from '@/components/ui';
 import { SignOutButton } from '@/components/sign-out-button';
 import { PortalSwitcher } from '@/components/portal-switcher';
+import { PortalNavLinks } from '@/components/portal-nav-links';
+import { PortalMobileNav } from '@/components/portal-mobile-nav';
 import { getInitials } from '@/lib/utils';
 import {
-  Wallet,
   Clock,
-  Users,
-  Settings,
-  Home,
-  Network,
-  Upload,
-  Megaphone,
 } from 'lucide-react';
 
 export default async function DashboardLayout({
@@ -67,47 +62,11 @@ export default async function DashboardLayout({
             {/* Portal Toggle - Desktop (only when the member can use both) */}
             {showBothPortals && <PortalSwitcher className="hidden md:inline-flex" />}
 
-            {/* Refer wizard + Wallet + Team links for referrers - Desktop */}
-            {canUseReferrerPortal && (
-              <div className="hidden md:flex items-center gap-1">
-                <Link href="/dashboard/referrer/refer">
-                  <Button size="sm" className="gap-1.5 bg-amber-400 text-slate-900 hover:bg-amber-300">
-                    <Megaphone className="h-4 w-4" />
-                    Refer
-                  </Button>
-                </Link>
-                <Link href="/dashboard/referrer/wallet">
-                  <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
-                    <Wallet className="h-4 w-4" />
-                    Wallet
-                  </Button>
-                </Link>
-                <Link href="/dashboard/referrer/team">
-                  <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
-                    <Network className="h-4 w-4" />
-                    Team
-                  </Button>
-                </Link>
-              </div>
-            )}
-
-            {/* Pitch + Wallet links for providers - Desktop */}
-            {canUseProviderPortal && (
-              <div className="hidden md:flex items-center gap-1">
-                <Link href="/dashboard/provider/pitch">
-                  <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
-                    <Upload className="h-4 w-4" />
-                    Pitch
-                  </Button>
-                </Link>
-                <Link href="/dashboard/provider/wallet">
-                  <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
-                    <Wallet className="h-4 w-4" />
-                    Wallet
-                  </Button>
-                </Link>
-              </div>
-            )}
+            {/* Secondary links — context-aware so there's never a duplicate Wallet */}
+            <PortalNavLinks
+              canUseReferrerPortal={canUseReferrerPortal}
+              canUseProviderPortal={canUseProviderPortal}
+            />
           </div>
 
           <div className="flex items-center gap-2 md:gap-4">
@@ -164,77 +123,11 @@ export default async function DashboardLayout({
         {children}
       </main>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t">
-        <div className="flex items-center justify-around h-16 px-2">
-          <Link 
-            href="/dashboard" 
-            className="flex flex-col items-center justify-center gap-1 px-3 py-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Home className="h-5 w-5" />
-            <span className="text-xs">Home</span>
-          </Link>
-          
-          {canUseReferrerPortal && (
-            <>
-              <Link
-                href="/dashboard/referrer/refer"
-                className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-amber-600 hover:text-amber-700 transition-colors"
-              >
-                <Megaphone className="h-5 w-5" />
-                <span className="text-[10px] font-semibold">Refer</span>
-              </Link>
-              <Link
-                href="/dashboard/referrer/providers"
-                className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Users className="h-5 w-5" />
-                <span className="text-[10px]">Catalog</span>
-              </Link>
-              <Link
-                href="/dashboard/referrer/team"
-                className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Network className="h-5 w-5" />
-                <span className="text-[10px]">Team</span>
-              </Link>
-              <Link
-                href="/dashboard/referrer/wallet"
-                className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Wallet className="h-5 w-5" />
-                <span className="text-[10px]">Wallet</span>
-              </Link>
-            </>
-          )}
-
-          {canUseProviderPortal && (
-            <>
-              <Link
-                href="/dashboard/provider/pitch"
-                className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Upload className="h-5 w-5" />
-                <span className="text-[10px]">Pitch</span>
-              </Link>
-              <Link
-                href="/dashboard/provider/wallet"
-                className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Wallet className="h-5 w-5" />
-                <span className="text-[10px]">Wallet</span>
-              </Link>
-              <Link
-                href="/dashboard/provider/settings"
-                className="flex flex-col items-center justify-center gap-1 px-2 py-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Settings className="h-5 w-5" />
-                <span className="text-[10px]">Settings</span>
-              </Link>
-            </>
-          )}
-        </div>
-      </nav>
+      {/* Mobile Bottom Navigation — context-aware */}
+      <PortalMobileNav
+        canUseReferrerPortal={canUseReferrerPortal}
+        canUseProviderPortal={canUseProviderPortal}
+      />
     </div>
   );
 }
