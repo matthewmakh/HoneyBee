@@ -12,13 +12,16 @@ interface RegisterInput {
   confirmPassword: string;
   canUseReferrerPortal: boolean;
   canUseProviderPortal: boolean;
+  agreedToRules: boolean;
+  referralSource?: string;
+  enrollmentNote?: string;
 }
 
 export async function registerUser(input: RegisterInput): Promise<ApiResult<{ companyId: string }>> {
   try {
     // Validate input
     const validated = registerSchema.safeParse(input);
-    
+
     if (!validated.success) {
       const firstIssue = validated.error.issues[0];
       return {
@@ -36,6 +39,9 @@ export async function registerUser(input: RegisterInput): Promise<ApiResult<{ co
       userName: input.name,
       userEmail: input.email,
       userPassword: input.password,
+      agreedToRules: input.agreedToRules,
+      referralSource: input.referralSource?.trim() || null,
+      enrollmentNote: input.enrollmentNote?.trim() || null,
     });
 
     return {

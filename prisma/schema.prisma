@@ -105,6 +105,10 @@ model Company {
   l1ManagerCompanyId         String? // direct upline (self-ref)
   originalSponsorCompanyId   String? // set once on first-referral; drives lifetime 1%
   providerOwedBalance        Decimal  @default(0) @db.Decimal(12, 2) // A-Team: what you owe (positive = you owe)
+  // ---- Enrollment agreement (captured at sign-up) ----
+  agreedToRulesAt            DateTime? // set when the member accepted all club rules
+  referralSource             String? // "how did you hear about the club?"
+  enrollmentNote             String?   @db.Text // optional thoughts shared at sign-up
   createdAt                  DateTime @default(now())
   updatedAt                  DateTime @updatedAt
 

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage, Badge, Button, Card, CardContent } from '@/components/ui';
 import { approveApplicationAction, rejectApplicationAction } from './actions';
 import { getInitials } from '@/lib/utils';
-import { CheckCircle, XCircle, Building2 } from 'lucide-react';
+import { CheckCircle, XCircle, Building2, ShieldCheck, ShieldAlert, MessageSquare, Ear } from 'lucide-react';
 import type { CompanyWithProfile } from '@/lib/types';
 
 interface ApplicationsListProps {
@@ -87,6 +87,34 @@ export function ApplicationsList({ companies: initialCompanies }: ApplicationsLi
                 <p className="text-xs">Categories: {company.providerProfile.serviceCategories.join(', ')}</p>
               </div>
             )}
+
+            {/* Enrollment agreement + comments — so the admin can confirm they
+                accepted the club standards and read what's on their mind. */}
+            <div className="text-sm border rounded-md p-3 bg-muted/30 space-y-2">
+              {company.agreedToRulesAt ? (
+                <p className="flex items-center gap-1.5 text-green-700 text-xs font-medium">
+                  <ShieldCheck className="h-4 w-4" />
+                  Agreed to club rules · {new Date(company.agreedToRulesAt).toLocaleDateString()}
+                </p>
+              ) : (
+                <p className="flex items-center gap-1.5 text-amber-700 text-xs font-medium">
+                  <ShieldAlert className="h-4 w-4" />
+                  No rules agreement on file
+                </p>
+              )}
+              {company.referralSource && (
+                <p className="text-xs text-muted-foreground flex items-start gap-1.5">
+                  <Ear className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                  <span><span className="font-medium text-foreground">Heard via:</span> {company.referralSource}</span>
+                </p>
+              )}
+              {company.enrollmentNote && (
+                <p className="text-xs text-muted-foreground flex items-start gap-1.5">
+                  <MessageSquare className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                  <span><span className="font-medium text-foreground">Comment:</span> &ldquo;{company.enrollmentNote}&rdquo;</span>
+                </p>
+              )}
+            </div>
 
             <div className="flex gap-2 pt-2">
               <Button

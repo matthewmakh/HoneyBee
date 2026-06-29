@@ -94,6 +94,9 @@ interface Company {
   isSuspended: boolean;
   cashBalance: number;
   benefitsBalance: number;
+  agreedToRulesAt: Date | string | null;
+  referralSource: string | null;
+  enrollmentNote: string | null;
   createdAt: Date;
   updatedAt: Date;
   users: User[];
@@ -650,6 +653,35 @@ export function AccountsList({ companies }: AccountsListProps) {
                       </CardContent>
                     </Card>
                   )}
+
+                  {/* Enrollment agreement + comments */}
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm">Enrollment</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2 text-sm">
+                      {selectedCompany.agreedToRulesAt ? (
+                        <p className="flex items-center gap-1.5 text-green-700">
+                          <Shield className="h-4 w-4" />
+                          Agreed to club rules · {formatDate(new Date(selectedCompany.agreedToRulesAt))}
+                        </p>
+                      ) : (
+                        <p className="text-amber-700">No rules agreement on file</p>
+                      )}
+                      {selectedCompany.referralSource && (
+                        <p>
+                          <span className="text-muted-foreground">Heard via: </span>
+                          {selectedCompany.referralSource}
+                        </p>
+                      )}
+                      {selectedCompany.enrollmentNote && (
+                        <p>
+                          <span className="text-muted-foreground">Comment: </span>
+                          &ldquo;{selectedCompany.enrollmentNote}&rdquo;
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
 
                   {/* Dates */}
                   <div className="text-sm text-muted-foreground space-y-1">

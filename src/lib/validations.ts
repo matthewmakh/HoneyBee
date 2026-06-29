@@ -18,6 +18,12 @@ export const registerSchema = z.object({
   confirmPassword: z.string(),
   canUseReferrerPortal: z.boolean().default(true),
   canUseProviderPortal: z.boolean().default(false),
+  // Enrollment agreement
+  agreedToRules: z.boolean().refine((v) => v === true, {
+    message: 'You must agree to all club rules to enroll',
+  }),
+  referralSource: z.string().max(200, 'Too long').optional(),
+  enrollmentNote: z.string().max(1000, 'Too long').optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ['confirmPassword'],

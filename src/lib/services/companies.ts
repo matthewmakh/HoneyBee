@@ -15,6 +15,10 @@ interface CreateCompanyInput {
   userName: string;
   userEmail: string;
   userPassword: string;
+  // Enrollment agreement captured at sign-up
+  agreedToRules?: boolean;
+  referralSource?: string | null;
+  enrollmentNote?: string | null;
 }
 
 /**
@@ -68,6 +72,9 @@ export async function createCompany(input: CreateCompanyInput): Promise<Company>
             canUseReferrerPortal: input.canUseReferrerPortal,
             canUseProviderPortal: input.canUseProviderPortal,
             providerApplicationPending: input.providerApplicationPending ?? false,
+            agreedToRulesAt: input.agreedToRules ? new Date() : null,
+            referralSource: input.referralSource ?? null,
+            enrollmentNote: input.enrollmentNote ?? null,
           },
         });
 
