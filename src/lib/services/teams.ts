@@ -170,6 +170,168 @@ export async function getDownlineTree(
 }
 
 // ============================================================================
+// Team page cards (identity + My Team / My Upline / My Downline)
+// ============================================================================
+
+export interface TeamMemberCard {
+  id: string;
+  name: string;
+  memberId: string;
+  teamRole: TeamRole;
+  logoUrl: string | null;
+  publicSlug: string | null;
+  contactName: string | null;
+  email: string | null;
+  phone: string | null;
+}
+
+const MEMBER_CARD_SELECT = {
+  id: true,
+  name: true,
+  memberId: true,
+  teamRole: true,
+  logoUrl: true,
+  providerProfile: { select: { publicSlug: true } },
+  users: {
+    select: { name: true, email: true, phone: true },
+    orderBy: { createdAt: 'asc' as const },
+    take: 1,
+  },
+};
+
+type MemberCardRow = {
+  id: string;
+  name: string;
+  memberId: string;
+  teamRole: TeamRole;
+  logoUrl: string | null;
+  providerProfile: { publicSlug: string | null } | null;
+  users: { name: string; email: string; phone: string | null }[];
+};
+
+function toMemberCard(row: MemberCardRow): TeamMemberCard {
+  const contact = row.users[0];
+  return {
+    id: row.id,
+    name: row.name,
+    memberId: row.memberId,
+    teamRole: row.teamRole,
+    logoUrl: row.logoUrl,
+    publicSlug: row.providerProfile?.publicSlug ?? null,
+    contactName: contact?.name ?? null,
+    email: contact?.email ?? null,
+    phone: contact?.phone ?? null,
+  };
+}
+
+/** The member's own identity card. */
+export async function getMemberCard(companyId: string): Promise<TeamMemberCard | null> {
+  const row = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: MEMBER_CARD_SELECT,
+  });
+  return row ? toMemberCard(row as MemberCardRow) : null;
+}
+
+/**
+ * "My Team" — everyone who shares my L-1 Manager (my crossline peers), excluding
+ * me. If I have no manager I report to the club and have no crossline yet.
+ */
+export async function getCrossline(companyId: string): Promise<TeamMemberCard[]> {
+  const me = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { l1ManagerCompanyId: true },
+  });
+  if (!me?.l1ManagerCompanyId) return [];
+  const rows = await prisma.company.findMany({
+    where: {
+      l1ManagerCompanyId: me.l1ManagerCompanyId,
+      id: { not: companyId },
+    },
+    select: MEMBER_CARD_SELECT,
+    orderBy: { name: 'asc' },
+  });
+  return (rows as MemberCardRow[]).map(toMemberCard);
+}
+
+/**
+ * "My Upline" — L-1 (sponsor), L-2, L-3 managers and the Club Admin, each as a
+ * card (or null if not present).
+ */
+export async function getUplineCards(companyId: string): Promise<{
+  l1: TeamMemberCard | null;
+  l2: TeamMemberCard | null;
+  l3: TeamMemberCard | null;
+  clubAdmin: TeamMemberCard | null;
+}> {
+  const snap = await getUplineSnapshot(companyId);
+  const ids = [
+    snap.l1ManagerCompanyId,
+    snap.l2ManagerCompanyId,
+    snap.l3ManagerCompanyId,
+    snap.clubAdminCompanyId,
+  ].filter((id): id is string => !!id);
+
+  const rows =
+    ids.length > 0
+      ? ((await prisma.company.findMany({
+          where: { id: { in: ids } },
+          select: MEMBER_CARD_SELECT,
+        })) as MemberCardRow[])
+      : [];
+  const byId = new Map(rows.map((r) => [r.id, toMemberCard(r)]));
+  const pick = (id: string | null) => (id ? byId.get(id) ?? null : null);
+  return {
+    l1: pick(snap.l1ManagerCompanyId),
+    l2: pick(snap.l2ManagerCompanyId),
+    l3: pick(snap.l3ManagerCompanyId),
+    clubAdmin: pick(snap.clubAdminCompanyId),
+  };
+}
+
+/**
+ * "My Downline" — members for whom I'm the L-1, L-2, or L-3 manager, bucketed by
+ * level (L-1 = direct, most prominent).
+ */
+export async function getDownlineCards(companyId: string): Promise<{
+  l1: TeamMemberCard[];
+  l2: TeamMemberCard[];
+  l3: TeamMemberCard[];
+}> {
+  const l1Rows = (await prisma.company.findMany({
+    where: { l1ManagerCompanyId: companyId },
+    select: MEMBER_CARD_SELECT,
+    orderBy: { name: 'asc' },
+  })) as MemberCardRow[];
+
+  const l1Ids = l1Rows.map((r) => r.id);
+  const l2Rows =
+    l1Ids.length > 0
+      ? ((await prisma.company.findMany({
+          where: { l1ManagerCompanyId: { in: l1Ids } },
+          select: MEMBER_CARD_SELECT,
+          orderBy: { name: 'asc' },
+        })) as MemberCardRow[])
+      : [];
+
+  const l2Ids = l2Rows.map((r) => r.id);
+  const l3Rows =
+    l2Ids.length > 0
+      ? ((await prisma.company.findMany({
+          where: { l1ManagerCompanyId: { in: l2Ids } },
+          select: MEMBER_CARD_SELECT,
+          orderBy: { name: 'asc' },
+        })) as MemberCardRow[])
+      : [];
+
+  return {
+    l1: l1Rows.map(toMemberCard),
+    l2: l2Rows.map(toMemberCard),
+    l3: l3Rows.map(toMemberCard),
+  };
+}
+
+// ============================================================================
 // Team Moves
 // ============================================================================
 
