@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Badge,
   Button,
@@ -264,6 +265,7 @@ export function ProviderDirectory({
             const stats = ratingStats[provider.id];
             const jobs = jobsCompleted[provider.companyId] ?? 0;
             const isTop = isTopProvider(provider.id, provider.companyId);
+            const bannerPhoto = provider.pitchPhotos?.[0] ?? provider.portfolioPhotos?.[0] ?? null;
 
             return (
               <div
@@ -283,10 +285,26 @@ export function ProviderDirectory({
                   </div>
                 )}
 
+                {/* Photo banner */}
+                <div className="relative aspect-[16/9] bg-gradient-to-br from-primary/10 to-amber-100 overflow-hidden">
+                  {bannerPhoto ? (
+                    <Image
+                      src={bannerPhoto}
+                      alt={provider.company.name}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-primary/40">
+                      <Briefcase className="h-10 w-10" />
+                    </div>
+                  )}
+                </div>
+
                 {/* Profile Header */}
-                <div className="p-5 pb-3 flex items-start gap-3">
+                <div className="p-5 pb-3 flex items-start gap-3 -mt-8">
                   <Avatar className={cn(
-                    'h-14 w-14 shrink-0 ring-2 ring-background shadow-sm',
+                    'h-16 w-16 shrink-0 ring-4 ring-background shadow-md',
                     'transition-transform duration-300 group-hover:scale-105'
                   )}>
                     <AvatarImage src={provider.company.logoUrl ?? undefined} />
@@ -295,7 +313,7 @@ export function ProviderDirectory({
                     </AvatarFallback>
                   </Avatar>
 
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 mt-8">
                     <p className="font-semibold leading-tight truncate group-hover:text-primary transition-colors">
                       {provider.company.name}
                     </p>

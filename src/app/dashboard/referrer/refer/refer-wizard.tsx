@@ -331,7 +331,7 @@ export function ReferWizard({ products }: { products: WizardProduct[] }) {
                       onClick={() => toggleSelect(p.companyId)}
                       disabled={atCap}
                       className={cn(
-                        'group relative text-left rounded-xl border bg-card p-4 transition-all',
+                        'group relative text-left rounded-xl border bg-card overflow-hidden transition-all',
                         isSelected
                           ? 'border-amber-400 ring-2 ring-amber-400/60 shadow-md'
                           : 'hover:border-primary/40 hover:shadow-sm',
@@ -339,45 +339,47 @@ export function ReferWizard({ products }: { products: WizardProduct[] }) {
                       )}
                     >
                       {isSelected && (
-                        <span className="absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-full bg-amber-400 text-slate-900">
+                        <span className="absolute top-3 right-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-amber-400 text-slate-900 shadow">
                           <Check className="h-4 w-4" />
                         </span>
                       )}
-                      <div className="flex items-start gap-3">
-                        <div className="h-12 w-12 shrink-0 overflow-hidden rounded-full bg-primary/10 flex items-center justify-center">
-                          {p.logoUrl ? (
-                            <Image
-                              src={p.logoUrl}
-                              alt={p.name}
-                              width={48}
-                              height={48}
-                              className="object-cover"
-                            />
-                          ) : (
-                            <span className="font-bold text-primary">
-                              {getInitials(p.name)}
-                            </span>
-                          )}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-semibold leading-tight truncate">{p.name}</p>
-                          <p className="text-xs text-muted-foreground font-mono">
-                            {p.memberId}
-                          </p>
-                          <p className="mt-1 text-xs font-medium text-amber-700">
-                            {commissionLabel(p)}
-                          </p>
-                        </div>
+                      {/* Product photo */}
+                      <div className="relative aspect-[16/9] bg-gradient-to-br from-primary/10 to-amber-100">
+                        {p.photos[0] ? (
+                          <Image src={p.photos[0]} alt={p.name} fill className="object-cover" />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-primary/40">
+                            <ImageIcon className="h-9 w-9" />
+                          </div>
+                        )}
                       </div>
-                      <p className="mt-3 text-sm text-muted-foreground line-clamp-2">
-                        {p.shortDescription}
-                      </p>
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {p.serviceCategories.slice(0, 3).map((c) => (
-                          <Badge key={c} variant="secondary" className="text-xs">
-                            {c}
-                          </Badge>
-                        ))}
+                      <div className="p-4 -mt-8 relative">
+                        <div className="flex items-start gap-3">
+                          <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full bg-primary/10 ring-4 ring-card flex items-center justify-center">
+                            {p.logoUrl ? (
+                              <Image src={p.logoUrl} alt={p.name} width={56} height={56} className="object-cover" />
+                            ) : (
+                              <span className="font-bold text-primary">{getInitials(p.name)}</span>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1 mt-8">
+                            <p className="font-semibold leading-tight truncate">{p.name}</p>
+                            <p className="text-xs text-muted-foreground font-mono">{p.memberId}</p>
+                            <p className="mt-1 text-xs font-medium text-amber-700">
+                              {commissionLabel(p)}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="mt-3 text-sm text-muted-foreground line-clamp-2">
+                          {p.shortDescription}
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {p.serviceCategories.slice(0, 3).map((c) => (
+                            <Badge key={c} variant="secondary" className="text-xs">
+                              {c}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
                     </button>
                   );
@@ -508,10 +510,31 @@ export function ReferWizard({ products }: { products: WizardProduct[] }) {
           <Card>
             <CardHeader>
               <CardTitle>Homeowner information</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                This referral will be sent to:{' '}
-                {selectedProducts.map((p) => p.name).join(', ')}
-              </p>
+              <p className="text-sm text-muted-foreground">This referral will be sent to:</p>
+              <div className="mt-2 flex flex-wrap gap-3">
+                {selectedProducts.map((p) => (
+                  <div
+                    key={p.companyId}
+                    className="flex items-center gap-2 rounded-lg border bg-muted/30 p-1.5 pr-3"
+                  >
+                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md bg-primary/10">
+                      {p.photos[0] || p.logoUrl ? (
+                        <Image
+                          src={(p.photos[0] ?? p.logoUrl) as string}
+                          alt={p.name}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-full w-full items-center justify-center text-xs font-bold text-primary">
+                          {getInitials(p.name)}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-sm font-medium">{p.name}</span>
+                  </div>
+                ))}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
