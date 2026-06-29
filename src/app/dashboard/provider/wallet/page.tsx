@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui';
 import { BackButton } from '@/components/back-button';
-import { CommissionSplitCard } from '@/components/commission-split';
+import { JobSplitList } from '@/components/job-split-list';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { TrendingUp, DollarSign, Wallet } from 'lucide-react';
 
@@ -139,13 +139,9 @@ export default async function ProviderWalletPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid gap-4">
             {splits.map((split) => (
-              <CommissionSplitCard
-                key={split.leadId}
-                split={split}
-                subtitle={`Referred by ${split.referrerName} · #${split.leadId.slice(-6)}`}
-              />
+              <JobSplitList key={split.leadId} split={split} viewerCompanyId={user.companyId} />
             ))}
           </div>
         )}

@@ -12,6 +12,7 @@ export interface LeadSplitLine {
   lineType: PayoutLineType;
   label: string;
   category: string;
+  beneficiaryCompanyId: string | null;
   beneficiaryName: string | null;
   amount: number;
   status: PayoutStatus;
@@ -57,6 +58,7 @@ export async function getLeadSplits(
         lineType: p.lineType,
         label: PAYOUT_LINE_LABELS[p.lineType],
         category: PAYOUT_CATEGORY[p.lineType],
+        beneficiaryCompanyId: p.beneficiaryCompanyId,
         beneficiaryName: p.beneficiaryCompany?.name ?? null,
         amount: Number(p.amount),
         status: p.status,
