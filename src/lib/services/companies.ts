@@ -47,9 +47,11 @@ async function getNextMemberId(): Promise<string> {
  * Create a new company with initial user
  */
 export async function createCompany(input: CreateCompanyInput): Promise<Company> {
-  // Check if email already exists
-  const existingUser = await prisma.user.findUnique({
-    where: { email: input.userEmail },
+  // Emails are case-insensitive — store them normalized and check for an
+  // existing account regardless of case so "Mike@" and "mike@" can't collide.
+  const normalizedEmail = input.userEmail.trim().toLowerCase();
+  const existingUser = await prisma.user.findFirst({
+    where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
   });
 
   if (existingUser) {
@@ -82,7 +84,7 @@ export async function createCompany(input: CreateCompanyInput): Promise<Company>
           data: {
             companyId: newCompany.id,
             name: input.userName,
-            email: input.userEmail,
+            email: normalizedEmail,
             passwordHash,
             role: 'USER',
           },

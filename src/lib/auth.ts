@@ -25,11 +25,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        const email = credentials.email as string;
+        // Emails are case-insensitive: normalize the input and match the stored
+        // value regardless of case so "Mike@..." and "mike@..." both sign in.
+        const email = (credentials.email as string).trim().toLowerCase();
         const password = credentials.password as string;
 
-        const user = await prisma.user.findUnique({
-          where: { email },
+        const user = await prisma.user.findFirst({
+          where: { email: { equals: email, mode: 'insensitive' } },
           include: {
             company: {
               select: {
