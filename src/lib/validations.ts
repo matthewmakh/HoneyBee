@@ -92,6 +92,18 @@ export const deleteCompanySchema = z.object({
   companyId: z.string().cuid('Invalid company ID'),
 });
 
+// Admin accounts carry full platform access, so hold them to a longer password
+// than the 8 characters we accept for ordinary members.
+export const createAdminSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name too long'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(12, 'Admin passwords must be at least 12 characters'),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ['confirmPassword'],
+});
+
 // ============================================================================
 // Withdrawal Schemas
 // ============================================================================

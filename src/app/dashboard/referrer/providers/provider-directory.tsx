@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
   Badge,
   Button,
@@ -14,7 +15,9 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
+  EmptyState,
 } from '@/components/ui';
+import { Honeycomb } from '@/components/brand';
 import { formatCurrency, getInitials, cn } from '@/lib/utils';
 import type { ProviderProfileWithCompany, ProviderSearchFilters } from '@/lib/types';
 import { 
@@ -248,15 +251,19 @@ export function ProviderDirectory({
 
       {/* Provider Grid */}
       {sortedProviders.length === 0 ? (
-        <div className="rounded-xl border border-dashed p-16 text-center">
-          <Search className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
-          <p className="font-medium text-muted-foreground">No providers found</p>
-          <p className="text-sm text-muted-foreground mt-1">Try a different category or ZIP code.</p>
-          {hasActiveFilters && (
-            <Button variant="outline" size="sm" className="mt-4" onClick={clearAllFilters}>
-              Clear all filters
-            </Button>
-          )}
+        <div className="rounded-xl border border-dashed">
+          <EmptyState
+            art="search"
+            title="No providers found"
+            description="Try a different category or ZIP code — or clear your filters to see everyone."
+            action={
+              hasActiveFilters ? (
+                <Button variant="outline" size="sm" onClick={clearAllFilters}>
+                  Clear all filters
+                </Button>
+              ) : undefined
+            }
+          />
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -283,10 +290,32 @@ export function ProviderDirectory({
                   </div>
                 )}
 
+                {/* Cover — the provider's own work if they've uploaded any, otherwise a
+                    brand band. A shared stock photo on every card just reads as filler. */}
+                <div className="relative h-24 w-full overflow-hidden bg-[hsl(var(--primary))]">
+                  {provider.portfolioPhotos[0] ? (
+                    <>
+                      <Image
+                        src={provider.portfolioPhotos[0]}
+                        alt=""
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div
+                        aria-hidden
+                        className="absolute inset-0 bg-gradient-to-t from-card/80 to-transparent"
+                      />
+                    </>
+                  ) : (
+                    <Honeycomb className="text-[hsl(var(--gold))]" opacity={0.28} />
+                  )}
+                </div>
+
                 {/* Profile Header */}
-                <div className="p-5 pb-3 flex items-start gap-3">
+                <div className="p-5 pt-0 pb-3 flex items-start gap-3">
                   <Avatar className={cn(
-                    'h-14 w-14 shrink-0 ring-2 ring-background shadow-sm',
+                    'h-14 w-14 shrink-0 -mt-7 ring-4 ring-card shadow-sm bg-card',
                     'transition-transform duration-300 group-hover:scale-105'
                   )}>
                     <AvatarImage src={provider.company.logoUrl ?? undefined} />

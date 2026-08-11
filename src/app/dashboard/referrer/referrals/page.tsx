@@ -1,7 +1,9 @@
+import Link from 'next/link';
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getReferrerLeads } from '@/lib/services/leads';
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
@@ -14,6 +16,7 @@ import {
   TableHeader,
   TableRow,
   Badge,
+  EmptyState,
 } from '@/components/ui';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { LEAD_STATUS_LABELS, LEAD_STATUS_COLORS } from '@/lib/types';
@@ -49,9 +52,16 @@ export default async function MyReferralsPage() {
         </CardHeader>
         <CardContent>
           {leads.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground">
-              No referrals yet. Start by finding a provider and submitting your first lead!
-            </div>
+            <EmptyState
+              art="referrals"
+              title="No referrals yet"
+              description="Find a provider in the directory and send them your first lead — you'll be able to track it right here."
+              action={
+                <Link href="/dashboard/referrer/providers">
+                  <Button>Browse providers</Button>
+                </Link>
+              }
+            />
           ) : (
             <Table>
               <TableHeader>

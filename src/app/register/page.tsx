@@ -4,6 +4,7 @@ import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Input, Label, Checkbox } from '@/components/ui';
+import { AuthShell } from '@/components/brand';
 import { registerUser } from './actions';
 
 function RegisterForm() {
@@ -56,16 +57,11 @@ function RegisterForm() {
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md border-0 shadow-none sm:border sm:shadow-card">
       <CardHeader className="space-y-1">
-        <div className="flex items-center justify-center mb-4">
-          <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">HB</span>
-          </div>
-        </div>
-        <CardTitle className="text-2xl text-center">Create an account</CardTitle>
-        <CardDescription className="text-center">
-          Join the Honeybee Referral Club
+        <CardTitle className="text-2xl">Create an account</CardTitle>
+        <CardDescription>
+          Join the Honeybee Referral Club — it&apos;s free
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
@@ -188,16 +184,16 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <AuthShell>
       <Suspense fallback={
         <Card className="w-full max-w-md">
-          <CardContent className="p-8 text-center">
+          <CardContent className="p-8 text-center text-muted-foreground">
             Loading...
           </CardContent>
         </Card>
       }>
         <RegisterForm />
       </Suspense>
-    </div>
+    </AuthShell>
   );
 }

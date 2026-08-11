@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { getCompanyBalances, getCompanyTransactionHistory } from '@/lib/services/finance';
 import { getCompanyWithdrawalRequests } from '@/lib/services/finance';
-import { Card, CardContent, CardHeader, CardTitle, Badge } from '@/components/ui';
+import { Card, CardContent, CardHeader, CardTitle, Badge, EmptyState } from '@/components/ui';
 import { formatCurrency } from '@/lib/utils';
 import { WithdrawalDialog } from './withdrawal-dialog';
 import { DollarSign, Gift, Clock, CheckCircle, XCircle } from 'lucide-react';
@@ -103,12 +103,12 @@ export default async function WalletPage() {
       <div className="space-y-4">
         <h2 className="text-xl font-semibold">Transaction History</h2>
         {transactions.length === 0 ? (
-          <div className="rounded-lg border border-dashed p-10 text-center">
-            <DollarSign className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-            <p className="text-muted-foreground">No transactions yet</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Earnings will appear here once your referrals are completed and confirmed.
-            </p>
+          <div className="rounded-lg border border-dashed">
+            <EmptyState
+              art="wallet"
+              title="No transactions yet"
+              description="Earnings will appear here once your referrals are completed and confirmed by an admin."
+            />
           </div>
         ) : (
           <div className="rounded-lg border divide-y">

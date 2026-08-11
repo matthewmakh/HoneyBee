@@ -77,11 +77,14 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
+     * Match all request paths except:
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * - favicon.ico, apple-icon, opengraph-image (generated metadata routes)
+     * - any file with a static asset extension, i.e. everything under public/.
+     *   Without this the auth redirect below swallows brand images and fonts,
+     *   which also breaks next/image (the optimizer fetches these paths itself).
      */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico|apple-icon|opengraph-image|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|woff|woff2|ttf|otf)$).*)',
   ],
 };

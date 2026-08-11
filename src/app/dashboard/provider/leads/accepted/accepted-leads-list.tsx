@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Card,
+  EmptyState,
   CardContent,
   CardDescription,
   CardFooter,
@@ -83,8 +84,12 @@ export function AcceptedLeadsList({ leads }: AcceptedLeadsListProps) {
   if (leads.length === 0) {
     return (
       <Card>
-        <CardContent className="py-12 text-center">
-          <p className="text-muted-foreground">No accepted leads at the moment.</p>
+        <CardContent className="p-0">
+          <EmptyState
+            art="leads"
+            title="No accepted leads yet"
+            description="Leads you accept from the New Leads tab show up here so you can track them through to completion."
+          />
         </CardContent>
       </Card>
     );

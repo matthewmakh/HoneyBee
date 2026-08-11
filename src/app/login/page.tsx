@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Input, Label } from '@/components/ui';
+import { AuthShell } from '@/components/brand';
 
 function LoginForm() {
   const router = useRouter();
@@ -43,15 +44,10 @@ function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md border-0 shadow-none sm:border sm:shadow-card">
       <CardHeader className="space-y-1">
-        <div className="flex items-center justify-center mb-4">
-          <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">HB</span>
-          </div>
-        </div>
-        <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
-        <CardDescription className="text-center">
+        <CardTitle className="text-2xl">Welcome back</CardTitle>
+        <CardDescription>
           Sign in to your Honeybee Referral Club account
         </CardDescription>
       </CardHeader>
@@ -104,16 +100,16 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <AuthShell>
       <Suspense fallback={
         <Card className="w-full max-w-md">
-          <CardContent className="p-8 text-center">
+          <CardContent className="p-8 text-center text-muted-foreground">
             Loading...
           </CardContent>
         </Card>
       }>
         <LoginForm />
       </Suspense>
-    </div>
+    </AuthShell>
   );
 }

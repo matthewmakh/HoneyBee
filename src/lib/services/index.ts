@@ -3,3 +3,4 @@ export * from './finance';
 export * from './leads';
 export * from './providers';
 export * from './reviews';
+export * from './team';

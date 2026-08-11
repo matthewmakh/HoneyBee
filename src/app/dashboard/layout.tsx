@@ -16,6 +16,7 @@ import {
   TabsTrigger,
 } from '@/components/ui';
 import { SignOutButton } from '@/components/sign-out-button';
+import { LogoMark } from '@/components/brand';
 import { getInitials } from '@/lib/utils';
 import { Wallet, Clock, Users, Briefcase, Send, Settings, Home } from 'lucide-react';
 
@@ -50,11 +51,9 @@ export default async function DashboardLayout({
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-14 md:h-16 items-center justify-between px-4">
           <div className="flex items-center gap-4 md:gap-6">
-            <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">HB</span>
-              </div>
-              <span className="font-semibold hidden sm:inline-block">Honeybee</span>
+            <Link href="/dashboard" className="flex items-center gap-2.5">
+              <LogoMark className="h-8 w-8" />
+              <span className="font-semibold tracking-tight hidden sm:inline-block">Honeybee</span>
             </Link>
 
             {/* Portal Tabs - Desktop */}

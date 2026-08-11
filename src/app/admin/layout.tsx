@@ -7,13 +7,15 @@ import {
   Button,
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui';
 import { SignOutButton } from '@/components/sign-out-button';
+import { LogoMark } from '@/components/brand';
 import { getInitials } from '@/lib/utils';
-import { LayoutDashboard, Clock, Building2, UserCheck, Wallet } from 'lucide-react';
+import { LayoutDashboard, Clock, Building2, UserCheck, Wallet, ShieldCheck } from 'lucide-react';
 import { getPendingProviderApplications } from '@/lib/services/companies';
 import { getPendingWithdrawalRequests } from '@/lib/services/finance';
 
@@ -55,6 +57,7 @@ export default async function AdminLayout({
       icon: Wallet,
       badge: pendingWithdrawals.length > 0 ? pendingWithdrawals.length : null,
     },
+    { href: '/admin/team', label: 'Team', icon: ShieldCheck },
   ];
 
   return (
@@ -63,11 +66,14 @@ export default async function AdminLayout({
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-14 md:h-16 items-center justify-between px-4">
           <div className="flex items-center gap-4 md:gap-6">
-            <Link href="/admin" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">HB</span>
-              </div>
-              <span className="font-semibold">Admin</span>
+            <Link href="/admin" className="flex items-center gap-2.5">
+              <LogoMark className="h-8 w-8" />
+              <span className="font-semibold tracking-tight">
+                Honeybee
+                <span className="ml-1.5 rounded bg-[hsl(var(--gold))]/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--gold-foreground))]">
+                  Admin
+                </span>
+              </span>
             </Link>
             
             <nav className="hidden md:flex items-center gap-1">
@@ -105,6 +111,13 @@ export default async function AdminLayout({
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild className="md:hidden">
+                <Link href="/admin/team" className="cursor-pointer">
+                  <ShieldCheck className="mr-2 h-4 w-4" />
+                  Admin Team
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="md:hidden" />
               <SignOutButton
                 signOutAction={async () => {
                   'use server';
@@ -124,7 +137,8 @@ export default async function AdminLayout({
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t">
         <div className="flex items-center justify-around h-16 px-1">
-          {navItems.map((item) => (
+          {/* Team lives in the account menu on phones — six tabs is too many for the bar. */}
+          {navItems.filter((item) => item.href !== '/admin/team').map((item) => (
             <Link 
               key={item.href}
               href={item.href} 

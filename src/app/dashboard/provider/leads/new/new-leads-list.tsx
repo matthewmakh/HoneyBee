@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   Card,
+  EmptyState,
   CardContent,
   CardDescription,
   CardFooter,
@@ -79,8 +80,12 @@ export function NewLeadsList({ leads }: NewLeadsListProps) {
   if (leads.length === 0) {
     return (
       <Card>
-        <CardContent className="py-12 text-center">
-          <p className="text-muted-foreground">No new leads at the moment.</p>
+        <CardContent className="p-0">
+          <EmptyState
+            art="leads"
+            title="No new leads right now"
+            description="When a referrer sends you a lead it will land here for you to accept or decline."
+          />
         </CardContent>
       </Card>
     );
