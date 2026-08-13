@@ -31,6 +31,12 @@ try {
 const MIN_PASSWORD_LENGTH = 12;
 const args = process.argv.slice(2);
 const useProd = args.includes('--prod');
+/**
+ * --club-admin provisions the operational admin: a normal USER inside the
+ * company whose teamRole is CLUB_ADMIN. Without it the account is made
+ * SUPERADMIN, which outranks everything.
+ */
+const asClubAdmin = args.includes('--club-admin');
 const email = args.find((a) => !a.startsWith('-'))?.trim().toLowerCase();
 
 const url = useProd ? process.env.PRODUCTION_DATABASE_URL : process.env.DATABASE_URL;
@@ -46,7 +52,11 @@ if (!url) {
   process.exit(1);
 }
 
-const prisma = new PrismaClient({ datasources: { db: { url } } });
+// Narrowed after the guards above so the async body does not re-widen them.
+const targetEmail: string = email;
+const targetUrl: string = url;
+
+const prisma = new PrismaClient({ datasources: { db: { url: targetUrl } } });
 
 /** Prisma generates cuids client-side and User.id has no database default. */
 function cuid(): string {
@@ -100,74 +110,93 @@ async function resolvePassword(): Promise<string> {
 async function main() {
   // Always state the target first. Pointing a script at the wrong database is
   // exactly how this account ended up missing in the first place.
-  console.log(`\n🎯 Database: ${url!.replace(/^.*@/, '').replace(/\?.*$/, '')}`);
+  console.log(`\n🎯 Database: ${targetUrl.replace(/^.*@/, '').replace(/\?.*$/, '')}`);
 
   const admins = await prisma.$queryRawUnsafe<{ email: string }[]>(
     `SELECT email FROM "User" WHERE role = 'SUPERADMIN' ORDER BY "createdAt"`
   );
   console.log(`   Existing super admins: ${admins.map((a) => a.email).join(', ') || '(none)'}`);
 
+  const targetRole = asClubAdmin ? 'USER' : 'SUPERADMIN';
+  const label = asClubAdmin ? 'CLUB_ADMIN (operational admin)' : 'SUPERADMIN';
+
   const found = await prisma.$queryRawUnsafe<{ id: string; role: string; name: string }[]>(
     `SELECT id, role::text AS role, name FROM "User" WHERE lower(email) = $1`,
-    email
+    targetEmail
   );
   const existing = found[0];
   console.log(
     existing
-      ? `   ${email} exists (currently ${existing.role}) — promoting and setting password.`
-      : `   ${email} does not exist — creating as SUPERADMIN.`
+      ? `   ${targetEmail} exists (currently ${existing.role}) — setting to ${label} and updating password.`
+      : `   ${targetEmail} does not exist — creating as ${label}.`
   );
 
-  let companyId: string | undefined;
-  if (!existing) {
-    // Join the company the platform already uses for admins rather than
-    // creating one: Company carries MLM columns this script must not guess at.
-    const host = await prisma.$queryRawUnsafe<{ id: string; name: string; memberId: string }[]>(
-      `SELECT c.id, c.name, c."memberId" FROM "Company" c
-       JOIN "User" u ON u."companyId" = c.id
-       WHERE u.role = 'SUPERADMIN' ORDER BY c."createdAt" LIMIT 1`
+  // Pick the company that carries the intended authority. Never create one:
+  // Company holds MLM columns (teamRole, upline pointers) this must not guess at.
+  const host = asClubAdmin
+    ? await prisma.$queryRawUnsafe<{ id: string; name: string; memberId: string }[]>(
+        `SELECT id, name, "memberId" FROM "Company"
+         WHERE "teamRole" = 'CLUB_ADMIN' ORDER BY "createdAt" LIMIT 1`
+      )
+    : await prisma.$queryRawUnsafe<{ id: string; name: string; memberId: string }[]>(
+        `SELECT c.id, c.name, c."memberId" FROM "Company" c
+         JOIN "User" u ON u."companyId" = c.id
+         WHERE u.role = 'SUPERADMIN' ORDER BY c."createdAt" LIMIT 1`
+      );
+
+  if (!host[0]) {
+    throw new Error(
+      asClubAdmin
+        ? 'No company with teamRole CLUB_ADMIN exists. Create one first.'
+        : 'No existing super-admin company to attach to. Create one first.'
     );
-    if (!host[0]) {
-      throw new Error('No existing super-admin company to attach to. Create one first.');
-    }
-    companyId = host[0].id;
-    console.log(`   Joining company: ${host[0].name} (${host[0].memberId})`);
   }
+  const companyId = host[0].id;
+  console.log(`   Company: ${host[0].name} (${host[0].memberId})`);
 
   const password = await resolvePassword();
   const passwordHash = await bcrypt.hash(password, 12);
 
   if (existing) {
     await prisma.$executeRawUnsafe(
-      `UPDATE "User" SET "passwordHash" = $1, role = 'SUPERADMIN' WHERE id = $2`,
+      `UPDATE "User" SET "passwordHash" = $1, role = $2::"UserRole", "companyId" = $3 WHERE id = $4`,
       passwordHash,
+      targetRole,
+      companyId,
       existing.id
     );
   } else {
     await prisma.$executeRawUnsafe(
       `INSERT INTO "User" (id, "companyId", name, email, "passwordHash", role, "createdAt")
-       VALUES ($1, $2, $3, $4, $5, 'SUPERADMIN', CURRENT_TIMESTAMP)`,
+       VALUES ($1, $2, $3, $4, $5, $6::"UserRole", CURRENT_TIMESTAMP)`,
       cuid(),
       companyId,
-      process.env.ADMIN_NAME ?? 'Matthew Makh',
-      email,
-      passwordHash
+      process.env.ADMIN_NAME ?? targetEmail.split('@')[0],
+      targetEmail,
+      passwordHash,
+      targetRole
     );
   }
 
   // Read back and verify rather than trusting the write.
-  const check = await prisma.$queryRawUnsafe<{ passwordHash: string; role: string }[]>(
-    `SELECT "passwordHash", role::text AS role FROM "User" WHERE lower(email) = $1`,
-    email
+  const check = await prisma.$queryRawUnsafe<{ passwordHash: string; role: string; teamRole: string }[]>(
+    `SELECT u."passwordHash", u.role::text AS role, c."teamRole"::text AS "teamRole"
+     FROM "User" u JOIN "Company" c ON c.id = u."companyId" WHERE lower(u.email) = $1`,
+    targetEmail
   );
   const row = check[0];
   if (!row) throw new Error('Account not found after write.');
-  if (row.role !== 'SUPERADMIN') throw new Error(`Role is ${row.role}, expected SUPERADMIN.`);
+  if (row.role !== targetRole) throw new Error(`Role is ${row.role}, expected ${targetRole}.`);
+  if (asClubAdmin && row.teamRole !== 'CLUB_ADMIN') {
+    throw new Error(`Company teamRole is ${row.teamRole}, expected CLUB_ADMIN.`);
+  }
   if (!(await bcrypt.compare(password, row.passwordHash))) {
     throw new Error('Password was written but did not verify. Try again.');
   }
 
-  console.log(`\n✅ ${email} is SUPERADMIN and the password verifies.`);
+  console.log(
+    `\n✅ ${targetEmail} is ${asClubAdmin ? 'CLUB_ADMIN (operational admin)' : 'SUPERADMIN'} and the password verifies.`
+  );
   console.log('   Sign in at /login — you will land on /admin.\n');
 }
 
