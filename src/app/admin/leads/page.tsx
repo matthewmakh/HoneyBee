@@ -1,9 +1,9 @@
-import { requireSuperAdmin } from '@/lib/auth';
+import { requireClubAdmin } from '@/lib/auth';
 import { getAllLeadsSimple, getLeadStats } from '@/lib/services/admin';
 import { LeadsList } from './leads-list';
 
 export default async function AdminLeadsPage() {
-  await requireSuperAdmin();
+  await requireClubAdmin();
 
   const [leads, stats] = await Promise.all([
     getAllLeadsSimple(),

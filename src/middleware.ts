@@ -34,9 +34,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // Check admin routes access
-  if (pathname.startsWith('/admin') && session?.user?.role !== 'SUPERADMIN') {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+  // Admin panel: the operational admin (CLUB_ADMIN) works here day to day, and
+  // SUPERADMIN sits above everything. Individual pages still enforce their own
+  // guard — the superadmin-only ones call requireSuperAdmin.
+  if (pathname.startsWith('/admin')) {
+    const isSuperAdmin = session?.user?.role === 'SUPERADMIN';
+    const isClubAdmin = session?.user?.company?.teamRole === 'CLUB_ADMIN';
+    if (!isSuperAdmin && !isClubAdmin) {
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
   }
 
   // Check if company is suspended
@@ -80,11 +86,14 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
+     * Match all request paths except:
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * - favicon.ico, apple-icon, opengraph-image (generated metadata routes)
+     * - any file with a static asset extension, i.e. everything under public/.
+     *   Without this the auth redirect below swallows brand images and fonts,
+     *   which also breaks next/image (the optimizer fetches these paths itself).
      */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico|apple-icon|opengraph-image|.*\\.(?:svg|png|jpg|jpeg|gif|webp|avif|ico|woff|woff2|ttf|otf)$).*)',
   ],
 };

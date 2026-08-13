@@ -7,7 +7,10 @@ import { serializeDecimal } from '@/lib/utils';
 export default async function PendingDealsPage() {
   const session = await auth();
 
-  if (!session?.user || session.user.role !== 'SUPERADMIN') {
+  const isAdmin =
+    session?.user?.role === 'SUPERADMIN' ||
+    session?.user?.company.teamRole === 'CLUB_ADMIN';
+  if (!isAdmin) {
     redirect('/login');
   }
 

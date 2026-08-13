@@ -51,3 +51,5 @@ export { Switch } from './switch';
 export { Table, TableBody, TableCaption, TableCell, TableFooter, TableHead, TableHeader, TableRow } from './table';
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
 export { Textarea } from './textarea';
+export { EmptyState } from './empty-state';
+export type { EmptyStateArt } from './empty-state';

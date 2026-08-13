@@ -1,9 +1,9 @@
-import { requireSuperAdmin } from '@/lib/auth';
+import { requireClubAdmin } from '@/lib/auth';
 import { getPendingProviderApplications } from '@/lib/services/companies';
 import { ApplicationsList } from './applications-list';
 
 export default async function AdminApplicationsPage() {
-  await requireSuperAdmin();
+  await requireClubAdmin();
 
   const companies = await getPendingProviderApplications();
 

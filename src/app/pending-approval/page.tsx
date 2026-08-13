@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { auth, signOut } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/ui';
@@ -19,10 +20,22 @@ export default async function PendingApprovalPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md overflow-hidden">
+        {/* A look at the work waiting on the other side of approval */}
+        <div className="relative h-36 w-full">
+          <Image
+            src="/images/provider-cover-default.jpg"
+            alt=""
+            fill
+            priority
+            sizes="(max-width: 640px) 100vw, 448px"
+            className="object-cover"
+          />
+          <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
+        </div>
         <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-full bg-amber-100 flex items-center justify-center">
+          <div className="-mt-12 flex justify-center mb-4">
+            <div className="h-16 w-16 rounded-full bg-amber-100 ring-4 ring-card flex items-center justify-center">
               <Clock className="h-8 w-8 text-amber-600" />
             </div>
           </div>

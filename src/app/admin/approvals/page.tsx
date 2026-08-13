@@ -1,4 +1,4 @@
-import { requireSuperAdmin } from '@/lib/auth';
+import { requireClubAdmin } from '@/lib/auth';
 import { 
   getPendingProviderApplications, 
   getPendingPriceChangeRequests, 
@@ -8,7 +8,7 @@ import {
 import { PendingApprovalsList } from './pending-list';
 
 export default async function AllPendingPage() {
-  await requireSuperAdmin();
+  await requireClubAdmin();
 
   const [
     providerApplications,

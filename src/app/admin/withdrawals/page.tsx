@@ -1,9 +1,9 @@
-import { requireSuperAdmin } from '@/lib/auth';
+import { requireClubAdmin } from '@/lib/auth';
 import { getPendingWithdrawalRequests } from '@/lib/services/finance';
 import { WithdrawalsList } from './withdrawals-list';
 
 export default async function AdminWithdrawalsPage() {
-  await requireSuperAdmin();
+  await requireClubAdmin();
 
   const requests = await getPendingWithdrawalRequests();
 

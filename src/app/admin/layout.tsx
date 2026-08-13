@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui';
 import { SignOutButton } from '@/components/sign-out-button';
+import { LogoMark } from '@/components/brand';
 import { getInitials } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -48,7 +49,12 @@ export default async function AdminLayout({
     getPendingWithdrawalRequests(),
   ]);
 
-  const navItems = [
+  // Companies (suspend/delete), Team (who is an admin) and Plan (payout
+  // economics) are overarching calls reserved for the super admin.
+  const SUPERADMIN_ONLY = ['/admin/companies', '/admin/team', '/admin/commission-plan'];
+  const isSuperAdmin = user.role === 'SUPERADMIN';
+
+  const allNavItems = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/pending', label: 'Pending Deals', icon: Clock },
     {
@@ -69,17 +75,24 @@ export default async function AdminLayout({
     },
   ];
 
+  const navItems = isSuperAdmin
+    ? allNavItems
+    : allNavItems.filter((item) => !SUPERADMIN_ONLY.includes(item.href));
+
   return (
     <div className="min-h-screen bg-background pb-16 md:pb-0">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto flex h-14 md:h-16 items-center justify-between px-4">
           <div className="flex items-center gap-4 md:gap-6">
-            <Link href="/admin" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">HB</span>
-              </div>
-              <span className="font-semibold">Admin</span>
+            <Link href="/admin" className="flex items-center gap-2.5">
+              <LogoMark className="h-8 w-8" />
+              <span className="font-semibold tracking-tight">
+                Honeybee
+                <span className="ml-1.5 rounded bg-[hsl(var(--gold))]/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[hsl(var(--gold-foreground))]">
+                  Admin
+                </span>
+              </span>
             </Link>
             
             <nav className="hidden md:flex items-center gap-1">

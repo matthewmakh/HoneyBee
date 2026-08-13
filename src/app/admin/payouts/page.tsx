@@ -1,4 +1,4 @@
-import { requireSuperAdmin } from '@/lib/auth';
+import { requireClubAdmin } from '@/lib/auth';
 import { getGlobalPayouts } from '@/lib/services/payouts';
 import {
   Card,
@@ -15,7 +15,7 @@ export default async function AdminPayoutsPage({
 }: {
   searchParams: Promise<{ status?: string }>;
 }) {
-  await requireSuperAdmin();
+  await requireClubAdmin();
   const params = await searchParams;
   const status = (params.status ?? 'AVAILABLE') as
     | 'AVAILABLE'

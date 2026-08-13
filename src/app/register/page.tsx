@@ -16,6 +16,7 @@ import {
   Checkbox,
   Textarea,
 } from '@/components/ui';
+import { AuthShell } from '@/components/brand';
 import { registerUser } from './actions';
 import { CLUB_RULES } from '@/lib/club-rules';
 import { CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react';
@@ -91,13 +92,8 @@ function RegisterForm() {
   };
 
   return (
-    <Card className="w-full max-w-xl">
+    <Card className="w-full max-w-xl border-0 shadow-none sm:border sm:shadow-card">
       <CardHeader className="space-y-1">
-        <div className="flex items-center justify-center mb-4">
-          <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-lg">HB</span>
-          </div>
-        </div>
         <CardTitle className="text-2xl text-center">
           {step === 1 ? 'Agree to the Club Standards' : 'Create your account'}
         </CardTitle>
@@ -318,16 +314,16 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <AuthShell>
       <Suspense
         fallback={
           <Card className="w-full max-w-md">
-            <CardContent className="p-8 text-center">Loading...</CardContent>
+            <CardContent className="p-8 text-center text-muted-foreground">Loading...</CardContent>
           </Card>
         }
       >
         <RegisterForm />
       </Suspense>
-    </div>
+    </AuthShell>
   );
 }

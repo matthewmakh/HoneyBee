@@ -1,4 +1,4 @@
-import { requireSuperAdmin } from '@/lib/auth';
+import { requireClubAdmin } from '@/lib/auth';
 import { getAdminOverviewStats } from '@/lib/services/admin';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge } from '@/components/ui';
@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 
 export default async function AdminDashboardPage() {
-  await requireSuperAdmin();
+  await requireClubAdmin();
 
   const stats = await getAdminOverviewStats();
 

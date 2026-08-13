@@ -1,6 +1,8 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { auth } from '@/lib/auth';
 import { Button } from '@/components/ui';
+import { Logo, LogoMark, Honeycomb } from '@/components/brand';
 import {
   Upload,
   Presentation,
@@ -104,14 +106,9 @@ export default async function Home() {
   return (
     <div className="flex min-h-screen flex-col">
       {/* Header */}
-      <header className="border-b">
+      <header className="sticky top-0 z-50 border-b bg-background/85 backdrop-blur supports-[backdrop-filter]:bg-background/70">
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">HB</span>
-            </div>
-            <span className="font-semibold text-lg">Honeybee Referral Club</span>
-          </div>
+          <Logo className="text-lg" />
           <div className="flex items-center gap-2">
             {user ? (
               <Link
@@ -140,22 +137,69 @@ export default async function Home() {
       </header>
 
       <main className="flex-1">
-        <section className="container mx-auto px-4 py-16 md:py-24">
-          <div className="max-w-3xl mx-auto text-center">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-              The Bee Club
-              <span className="block text-[hsl(var(--gold))]">
-                Multi-Level Referral Network
-              </span>
-            </h1>
-            <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
-              A-Team providers upload pitches. Bee Team referrers close deals.
-              Commissions split across 12 lines — direct referrer, upline
-              managers, club admin, and a lifetime 1% to your original sponsor.
-            </p>
-          </div>
+        <section className="relative overflow-hidden border-b">
+          <Honeycomb className="text-[hsl(var(--gold))]" opacity={0.07} />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -top-40 right-0 h-[32rem] w-[32rem] rounded-full bg-[hsl(var(--gold))]/10 blur-3xl"
+          />
 
-          <div className="mt-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
+          <div className="container relative mx-auto grid items-center gap-12 px-4 py-16 md:py-24 lg:grid-cols-2 lg:gap-16">
+            <div className="max-w-xl">
+              <span className="inline-flex items-center gap-2 rounded-full border border-[hsl(var(--gold))]/30 bg-[hsl(var(--gold))]/10 px-3 py-1 text-xs font-medium text-[hsl(var(--gold-foreground))]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[hsl(var(--gold))]" />
+                Referrals that actually pay
+              </span>
+
+              <h1 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+                The Bee Club
+                <span className="block text-[hsl(var(--gold))]">
+                  Multi-Level Referral Network
+                </span>
+              </h1>
+              <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
+                A-Team providers upload pitches. Bee Team referrers close deals.
+                Commissions split across 12 lines — direct referrer, upline
+                managers, club admin, and a lifetime 1% to your original sponsor.
+              </p>
+            </div>
+
+            {/* Hero image */}
+            <div className="relative">
+              <div
+                aria-hidden
+                className="absolute -bottom-4 -right-4 hidden h-full w-full rounded-2xl border-2 border-[hsl(var(--gold))]/40 lg:block"
+              />
+              <div className="relative overflow-hidden rounded-2xl shadow-soft ring-1 ring-black/5">
+                <Image
+                  src="/images/hero-handshake.jpg"
+                  alt="A service provider shaking hands with a homeowner on their front porch"
+                  width={2000}
+                  height={1143}
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="h-full w-full object-cover"
+                />
+                <div
+                  aria-hidden
+                  className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[hsl(var(--primary))]/70 to-transparent"
+                />
+                <div className="absolute bottom-4 left-4 right-4 flex items-center gap-3 rounded-xl bg-background/95 p-3 shadow-card backdrop-blur">
+                  <LogoMark className="h-9 w-9" />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">Deal closed</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      Commission split across the line
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="container mx-auto px-4 py-16">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">
             {visibleCtas.map((c) => {
               const href = user ? c.authedHref ?? c.href : c.href;
               const Icon = c.icon;
@@ -182,12 +226,24 @@ export default async function Home() {
         </section>
       </main>
 
-      <footer className="border-t py-8">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>
-            &copy; {new Date().getFullYear()} Honeybee Referral Club. All rights
-            reserved.
-          </p>
+      <footer className="border-t bg-card">
+        <div className="container mx-auto flex flex-col gap-6 px-4 py-10 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <Logo />
+            <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+              A referral marketplace built on trust and results.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <Link href="/demo" className="hover:text-foreground">Demo</Link>
+            <Link href="/login" className="hover:text-foreground">Sign In</Link>
+            <Link href="/register" className="hover:text-foreground">Get Started</Link>
+          </div>
+        </div>
+        <div className="border-t">
+          <div className="container mx-auto px-4 py-5 text-center text-sm text-muted-foreground">
+            &copy; {new Date().getFullYear()} Honeybee Referral Club. All rights reserved.
+          </div>
         </div>
       </footer>
     </div>

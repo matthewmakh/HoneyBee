@@ -1,9 +1,9 @@
-import { requireSuperAdmin } from '@/lib/auth';
+import { requireClubAdmin } from '@/lib/auth';
 import { getAllTransactions } from '@/lib/services/admin';
 import { TransactionsList } from './transactions-list';
 
 export default async function TransactionsPage() {
-  await requireSuperAdmin();
+  await requireClubAdmin();
 
   const { transactions, total } = await getAllTransactions({
     sortBy: 'createdAt',

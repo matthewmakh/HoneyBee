@@ -1,9 +1,9 @@
-import { requireSuperAdmin } from '@/lib/auth';
+import { requireClubAdmin } from '@/lib/auth';
 import { getAllCompaniesWithDetails } from '@/lib/services/admin';
 import { AccountsList } from './accounts-list';
 
 export default async function AccountsPage() {
-  await requireSuperAdmin();
+  await requireClubAdmin();
 
   const companies = await getAllCompaniesWithDetails({
     sortBy: 'createdAt',
