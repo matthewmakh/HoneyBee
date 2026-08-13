@@ -13,6 +13,8 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "npx tsx prisma/seed.ts",
     "db:reset": "npx tsx prisma/reset.ts",
+    "db:set-password": "npx tsx prisma/set-password.ts",
+    "db:grant-admin": "npx tsx prisma/grant-admin.ts",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate"
   },
