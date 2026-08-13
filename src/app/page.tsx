@@ -10,8 +10,28 @@ import {
   TrendingUp,
   Users,
   Shield,
+  Play,
+  ArrowRight,
   LucideIcon,
 } from 'lucide-react';
+
+const STEPS = [
+  {
+    illustration: '/illustrations/step-find.svg',
+    title: 'Find a provider',
+    body: 'Browse a directory of vetted local pros — every one reviewed and approved before they can receive work.',
+  },
+  {
+    illustration: '/illustrations/step-submit.svg',
+    title: 'Submit the referral',
+    body: 'Pass along the homeowner and the job details in under a minute. The provider takes it from there.',
+  },
+  {
+    illustration: '/illustrations/step-earn.svg',
+    title: 'Get paid',
+    body: 'When the job completes and the value is confirmed, your commission lands in your wallet.',
+  },
+];
 
 interface Cta {
   key: string;
@@ -222,6 +242,75 @@ export default async function Home() {
                 </Link>
               );
             })}
+          </div>
+        </section>
+
+        {/* How it works */}
+        <section className="bg-muted/40 py-20">
+          <div className="container mx-auto px-4">
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className="text-3xl font-bold tracking-tight">How it works</h2>
+              <p className="mt-3 text-muted-foreground">
+                Three steps from a conversation you were already having to money in your wallet.
+              </p>
+            </div>
+
+            <ol className="mx-auto mt-14 grid max-w-5xl gap-6 md:grid-cols-3">
+              {STEPS.map((step, i) => (
+                <li
+                  key={step.title}
+                  className="relative rounded-2xl border bg-card p-7 shadow-card transition-shadow hover:shadow-soft"
+                >
+                  <span className="absolute right-6 top-6 text-4xl font-bold tabular-nums text-[hsl(var(--gold))]/20">
+                    {i + 1}
+                  </span>
+                  <Image
+                    src={step.illustration}
+                    alt=""
+                    width={120}
+                    height={120}
+                    className="h-24 w-24"
+                  />
+                  <h3 className="mt-5 text-lg font-semibold">{step.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{step.body}</p>
+                </li>
+              ))}
+            </ol>
+
+            <div className="mt-12 text-center">
+              <Link href="/demo">
+                <Button variant="outline" size="lg" className="gap-2">
+                  <Play className="h-4 w-4 fill-current" />
+                  Watch the walkthrough
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Provider CTA */}
+        <section className="relative overflow-hidden bg-[hsl(var(--primary))] py-20 text-white">
+          <Honeycomb className="text-[hsl(var(--gold))]" opacity={0.12} />
+          <div className="container relative mx-auto px-4">
+            <div className="mx-auto max-w-2xl text-center">
+              <LogoMark inverted className="mx-auto h-14 w-14" />
+              <h2 className="mt-6 text-3xl font-bold tracking-tight">
+                Are you the one doing the work?
+              </h2>
+              <p className="mt-4 text-lg leading-relaxed text-white/70">
+                List your services and let a network of referrers bring you qualified jobs.
+                You set the commission, you accept only the leads you want.
+              </p>
+              <Link href="/register?provider=true" className="mt-8 inline-block">
+                <Button
+                  size="lg"
+                  className="gap-2 bg-[hsl(var(--gold))] px-8 text-[hsl(var(--gold-foreground))] hover:bg-[hsl(var(--gold))]/90"
+                >
+                  Apply as a Provider
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </section>
       </main>
