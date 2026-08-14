@@ -1,10 +1,15 @@
 import { requireSuperAdmin } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 import { ensureActivePlan } from '@/lib/services/commission-plan';
 import { DEFAULT_COMMISSION_PLAN } from '@/lib/types';
 import { PlanEditor } from './plan-editor';
 
 export default async function CommissionPlanPage() {
-  await requireSuperAdmin();
+  try {
+    await requireSuperAdmin();
+  } catch {
+    redirect('/admin');
+  }
   const plan = await ensureActivePlan();
 
   // Keep 12 lines in canonical order

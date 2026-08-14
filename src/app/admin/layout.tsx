@@ -38,7 +38,12 @@ export default async function AdminLayout({
     redirect('/login');
   }
 
-  if (session.user.role !== 'SUPERADMIN') {
+  // Club admins run the panel day to day; the super admin outranks everything.
+  // Middleware enforces the same rule — this is the defense-in-depth copy.
+  if (
+    session.user.role !== 'SUPERADMIN' &&
+    session.user.company.teamRole !== 'CLUB_ADMIN'
+  ) {
     redirect('/dashboard');
   }
 

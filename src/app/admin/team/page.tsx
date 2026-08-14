@@ -1,4 +1,5 @@
 import { requireSuperAdmin } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { getDownlineTree, listManagersAndAbove } from '@/lib/services/teams';
 import {
@@ -15,7 +16,11 @@ import { AssignManagerForm } from './assign-manager-form';
 import { UserX } from 'lucide-react';
 
 export default async function AdminTeamPage() {
-  await requireSuperAdmin();
+  try {
+    await requireSuperAdmin();
+  } catch {
+    redirect('/admin');
+  }
 
   // Find the CLUB_ADMIN root(s). If none, show orphan view.
   const admins = await prisma.company.findMany({

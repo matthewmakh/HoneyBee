@@ -1,4 +1,5 @@
 import { requireSuperAdmin } from '@/lib/auth';
+import { redirect } from 'next/navigation';
 import { db } from '@/lib/db';
 import { CompaniesList } from './companies-list';
 
@@ -16,7 +17,11 @@ interface CompanyWithCounts {
 }
 
 export default async function CompaniesPage() {
-  await requireSuperAdmin();
+  try {
+    await requireSuperAdmin();
+  } catch {
+    redirect('/admin');
+  }
 
   const companies: CompanyWithCounts[] = await db.company.findMany({
     include: {
