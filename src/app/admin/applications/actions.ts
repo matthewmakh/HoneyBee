@@ -1,13 +1,13 @@
 'use server';
 
-import { requireSuperAdmin } from '@/lib/auth';
+import { requireClubAdmin } from '@/lib/auth';
 import { approveProviderApplication, rejectProviderApplication } from '@/lib/services/companies';
 import { revalidatePath } from 'next/cache';
 import type { ApiResult } from '@/lib/types';
 
 export async function approveApplicationAction(companyId: string): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
     await approveProviderApplication(companyId);
     revalidatePath('/admin/applications');
     revalidatePath('/admin');
@@ -19,7 +19,7 @@ export async function approveApplicationAction(companyId: string): Promise<ApiRe
 
 export async function rejectApplicationAction(companyId: string): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
     await rejectProviderApplication(companyId);
     revalidatePath('/admin/applications');
     revalidatePath('/admin');

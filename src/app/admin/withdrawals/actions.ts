@@ -1,13 +1,13 @@
 'use server';
 
-import { requireSuperAdmin } from '@/lib/auth';
+import { requireClubAdmin } from '@/lib/auth';
 import { completeWithdrawalRequest, rejectWithdrawalRequest } from '@/lib/services/finance';
 import { revalidatePath } from 'next/cache';
 import type { ApiResult } from '@/lib/types';
 
 export async function completeWithdrawalAction(requestId: string): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
     await completeWithdrawalRequest(requestId);
     revalidatePath('/admin/withdrawals');
     revalidatePath('/admin');
@@ -19,7 +19,7 @@ export async function completeWithdrawalAction(requestId: string): Promise<ApiRe
 
 export async function rejectWithdrawalAction(requestId: string): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
     await rejectWithdrawalRequest(requestId);
     revalidatePath('/admin/withdrawals');
     revalidatePath('/admin');

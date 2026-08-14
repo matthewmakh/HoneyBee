@@ -1,6 +1,6 @@
 'use server';
 
-import { requireSuperAdmin } from '@/lib/auth';
+import { requireClubAdmin } from '@/lib/auth';
 import { markPayoutPaid } from '@/lib/services/payouts';
 import { revalidatePath } from 'next/cache';
 import type { ApiResult } from '@/lib/types';
@@ -9,7 +9,7 @@ export async function markPayoutPaidAction(
   payoutId: string
 ): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
     await markPayoutPaid(payoutId);
     revalidatePath('/admin/payouts');
     return { success: true };
@@ -25,7 +25,7 @@ export async function markPayoutsPaidBulk(
   payoutIds: string[]
 ): Promise<ApiResult<{ paidCount: number }>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
     let paidCount = 0;
     for (const id of payoutIds) {
       try {

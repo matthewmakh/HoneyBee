@@ -1,13 +1,13 @@
 'use server';
 
-import { requireSuperAdmin } from '@/lib/auth';
+import { requireClubAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import type { ApiResult } from '@/lib/types';
 
 export async function suspendCompanyAction(companyId: string): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
 
     await prisma.company.update({
       where: { id: companyId },
@@ -24,7 +24,7 @@ export async function suspendCompanyAction(companyId: string): Promise<ApiResult
 
 export async function unsuspendCompanyAction(companyId: string): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
 
     await prisma.company.update({
       where: { id: companyId },
@@ -41,7 +41,7 @@ export async function unsuspendCompanyAction(companyId: string): Promise<ApiResu
 
 export async function toggleProviderAccessAction(companyId: string, enable: boolean): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
 
     await prisma.company.update({
       where: { id: companyId },
@@ -61,7 +61,7 @@ export async function toggleProviderAccessAction(companyId: string, enable: bool
 
 export async function toggleReferrerAccessAction(companyId: string, enable: boolean): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
 
     await prisma.company.update({
       where: { id: companyId },
@@ -81,7 +81,7 @@ export async function updateUserContactAction(
   data: { name?: string; email?: string; phone?: string }
 ): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
 
     await prisma.user.update({
       where: { id: userId },

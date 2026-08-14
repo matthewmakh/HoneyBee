@@ -1,6 +1,6 @@
 'use server';
 
-import { requireSuperAdmin } from '@/lib/auth';
+import { requireClubAdmin } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import type { ApiResult } from '@/lib/types';
@@ -9,7 +9,7 @@ import { processLeadCompletion } from '@/lib/services/finance';
 // Provider Application Actions
 export async function approveProviderApplicationAction(companyId: string): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
 
     await prisma.company.update({
       where: { id: companyId },
@@ -30,7 +30,7 @@ export async function approveProviderApplicationAction(companyId: string): Promi
 
 export async function rejectProviderApplicationAction(companyId: string): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
 
     await prisma.$transaction(async (tx) => {
       // Remove the provider profile
@@ -60,7 +60,7 @@ export async function approvePriceChangeRequestAction(
   adminNotes?: string
 ): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
 
     const request = await prisma.priceChangeRequest.findUnique({
       where: { id: requestId },
@@ -103,7 +103,7 @@ export async function rejectPriceChangeRequestAction(
   adminNotes?: string
 ): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
 
     await prisma.priceChangeRequest.update({
       where: { id: requestId },
@@ -126,7 +126,7 @@ export async function rejectPriceChangeRequestAction(
 // Withdrawal Request Actions
 export async function approveWithdrawalRequestAction(requestId: string): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
 
     const request = await prisma.withdrawalRequest.findUnique({
       where: { id: requestId },
@@ -170,7 +170,7 @@ export async function approveWithdrawalRequestAction(requestId: string): Promise
 
 export async function rejectWithdrawalRequestAction(requestId: string): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
 
     await prisma.withdrawalRequest.update({
       where: { id: requestId },
@@ -189,7 +189,7 @@ export async function rejectWithdrawalRequestAction(requestId: string): Promise<
 // Pending Deal Actions
 export async function confirmDealAction(leadId: string): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
 
     await processLeadCompletion(leadId);
 
@@ -204,7 +204,7 @@ export async function confirmDealAction(leadId: string): Promise<ApiResult<null>
 
 export async function rejectDealAction(leadId: string): Promise<ApiResult<null>> {
   try {
-    await requireSuperAdmin();
+    await requireClubAdmin();
 
     // Revert the lead back to accepted status
     await prisma.lead.update({

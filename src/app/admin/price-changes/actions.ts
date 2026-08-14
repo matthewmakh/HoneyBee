@@ -15,7 +15,7 @@ export async function approvePriceChangeAction(
       return { success: false, error: 'Unauthorized' };
     }
 
-    if (session.user.role !== 'SUPERADMIN') {
+    if (session.user.role !== 'SUPERADMIN' && session.user.company.teamRole !== 'CLUB_ADMIN') {
       return { success: false, error: 'Super Admin access required' };
     }
 
@@ -39,7 +39,7 @@ export async function rejectPriceChangeAction(
       return { success: false, error: 'Unauthorized' };
     }
 
-    if (session.user.role !== 'SUPERADMIN') {
+    if (session.user.role !== 'SUPERADMIN' && session.user.company.teamRole !== 'CLUB_ADMIN') {
       return { success: false, error: 'Super Admin access required' };
     }
 
