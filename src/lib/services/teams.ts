@@ -407,6 +407,30 @@ export async function setOriginalSponsor(
 // Lookups
 // ============================================================================
 
+/**
+ * Resolve a sponsor from the member ID carried in an invite link.
+ * Only an active (non-suspended) company with referrer access can sponsor;
+ * anything else returns null and registration proceeds unsponsored.
+ */
+export async function resolveSponsorByMemberId(memberId: string): Promise<{
+  id: string;
+  name: string;
+  memberId: string;
+  teamRole: TeamRole;
+} | null> {
+  const normalized = memberId.trim().toUpperCase();
+  if (!normalized) return null;
+  const company = await prisma.company.findFirst({
+    where: {
+      memberId: { equals: normalized, mode: 'insensitive' },
+      isSuspended: false,
+      canUseReferrerPortal: true,
+    },
+    select: { id: true, name: true, memberId: true, teamRole: true },
+  });
+  return company;
+}
+
 export async function listManagersAndAbove(): Promise<Company[]> {
   const roles: TeamRole[] = ['L1_MANAGER', 'L2_MANAGER', 'L3_MANAGER', 'CLUB_ADMIN'];
   return prisma.company.findMany({

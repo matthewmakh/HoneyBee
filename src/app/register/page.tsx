@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -17,16 +17,31 @@ import {
   Textarea,
 } from '@/components/ui';
 import { AuthShell } from '@/components/brand';
-import { registerUser } from './actions';
+import { registerUser, getSponsorPreview } from './actions';
 import { CLUB_RULES } from '@/lib/club-rules';
-import { CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react';
+import { CheckCircle2, ArrowRight, ArrowLeft, UserCheck } from 'lucide-react';
 
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const defaultProvider = searchParams.get('provider') === 'true';
+  const sponsorMemberId = searchParams.get('sponsor') ?? '';
 
   const [step, setStep] = useState<1 | 2>(1);
+  const [sponsor, setSponsor] = useState<{ name: string; memberId: string } | null>(null);
+
+  // Show who the invite link belongs to, so the visitor knows whose team
+  // they are joining before they commit.
+  useEffect(() => {
+    if (!sponsorMemberId) return;
+    let cancelled = false;
+    getSponsorPreview(sponsorMemberId).then((s) => {
+      if (!cancelled) setSponsor(s);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [sponsorMemberId]);
 
   // Step 1 — agreement
   const [agreed, setAgreed] = useState<boolean[]>(() => CLUB_RULES.map(() => false));
@@ -78,6 +93,7 @@ function RegisterForm() {
         agreedToRules: allAgreed,
         referralSource,
         enrollmentNote,
+        sponsorMemberId: sponsorMemberId || undefined,
       });
       if (!result.success) {
         setError(result.error ?? 'Registration failed');
@@ -94,6 +110,18 @@ function RegisterForm() {
   return (
     <Card className="w-full max-w-xl border-0 shadow-none sm:border sm:shadow-card">
       <CardHeader className="space-y-1">
+        {sponsor && (
+          <div className="mb-2 flex items-center justify-center gap-2 rounded-lg border border-[hsl(var(--gold))]/30 bg-[hsl(var(--gold))]/10 px-3 py-2 text-sm">
+            <UserCheck className="h-4 w-4 shrink-0 text-[hsl(var(--gold))]" />
+            <span>
+              You&apos;re joining{' '}
+              <span className="font-semibold">{sponsor.name}</span>&apos;s team
+              <span className="ml-1 font-mono text-xs text-muted-foreground">
+                ({sponsor.memberId})
+              </span>
+            </span>
+          </div>
+        )}
         <CardTitle className="text-2xl text-center">
           {step === 1 ? 'Agree to the Club Standards' : 'Create your account'}
         </CardTitle>

@@ -24,6 +24,8 @@ export const registerSchema = z.object({
   }),
   referralSource: z.string().max(200, 'Too long').optional(),
   enrollmentNote: z.string().max(1000, 'Too long').optional(),
+  // Member ID carried by a sponsor's invite link (e.g. HB-000123)
+  sponsorMemberId: z.string().max(20, 'Invalid sponsor code').optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ['confirmPassword'],

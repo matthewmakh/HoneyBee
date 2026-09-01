@@ -19,6 +19,12 @@ interface CreateCompanyInput {
   agreedToRules?: boolean;
   referralSource?: string | null;
   enrollmentNote?: string | null;
+  /**
+   * Company of the member whose invite link was used. Becomes the new
+   * member's L-1 manager AND their immutable original sponsor (the lifetime
+   * 1% line), mirroring what changeL1Manager maintains.
+   */
+  sponsorCompanyId?: string | null;
 }
 
 /**
@@ -77,6 +83,8 @@ export async function createCompany(input: CreateCompanyInput): Promise<Company>
             agreedToRulesAt: input.agreedToRules ? new Date() : null,
             referralSource: input.referralSource ?? null,
             enrollmentNote: input.enrollmentNote ?? null,
+            l1ManagerCompanyId: input.sponsorCompanyId ?? null,
+            originalSponsorCompanyId: input.sponsorCompanyId ?? null,
           },
         });
 
@@ -89,6 +97,15 @@ export async function createCompany(input: CreateCompanyInput): Promise<Company>
             role: 'USER',
           },
         });
+
+        if (input.sponsorCompanyId) {
+          await tx.teamMembership.create({
+            data: {
+              companyId: newCompany.id,
+              l1ManagerCompanyId: input.sponsorCompanyId,
+            },
+          });
+        }
 
         return newCompany;
       });

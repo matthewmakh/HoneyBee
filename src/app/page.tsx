@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { auth } from '@/lib/auth';
+import { prisma } from '@/lib/db';
 import { Button } from '@/components/ui';
 import { Logo, LogoMark, Honeycomb } from '@/components/brand';
 import {
@@ -110,6 +111,25 @@ export default async function Home() {
   const session = await auth();
   const user = session?.user;
 
+  // Live A-Teams for the showcase — published pitches from active providers.
+  const aTeams = await prisma.providerProfile.findMany({
+    where: {
+      isPublished: true,
+      company: { canUseProviderPortal: true, isSuspended: false },
+    },
+    select: {
+      id: true,
+      shortDescription: true,
+      serviceCategories: true,
+      pitchPhotos: true,
+      portfolioPhotos: true,
+      publicSlug: true,
+      company: { select: { name: true, logoUrl: true } },
+    },
+    orderBy: { createdAt: 'asc' },
+    take: 6,
+  });
+
   const userRole: 'REFERRER' | 'PROVIDER' | 'ADMIN' | 'GUEST' = !user
     ? 'GUEST'
     : user.role === 'SUPERADMIN'
@@ -217,6 +237,93 @@ export default async function Home() {
             </div>
           </div>
         </section>
+
+        {/* A-Team showcase — the pros who do the work */}
+        {aTeams.length > 0 && (
+          <section className="border-b bg-card py-16">
+            <div className="container mx-auto px-4">
+              <div className="mx-auto max-w-2xl text-center">
+                <span className="text-xs font-semibold uppercase tracking-widest text-[hsl(var(--gold))]">
+                  The A-Team
+                </span>
+                <h2 className="mt-2 text-3xl font-bold tracking-tight">
+                  Meet the pros doing the work
+                </h2>
+                <p className="mt-3 text-muted-foreground">
+                  Every A-Team provider is vetted and approved before the Bee Team
+                  sells a single job for them.
+                </p>
+              </div>
+
+              <div className="mx-auto mt-12 grid max-w-5xl gap-6 sm:grid-cols-2">
+                {aTeams.map((team) => {
+                  const cover = team.pitchPhotos?.[0] ?? team.portfolioPhotos?.[0] ?? null;
+                  const href = team.publicSlug ? `/p/${team.publicSlug}` : '/register';
+                  return (
+                    <Link
+                      key={team.id}
+                      href={href}
+                      className="group overflow-hidden rounded-2xl border bg-background shadow-card transition-all hover:-translate-y-1 hover:shadow-soft"
+                    >
+                      <div className="relative h-52 w-full overflow-hidden bg-[hsl(var(--primary))]">
+                        {cover ? (
+                          <Image
+                            src={cover}
+                            alt={`${team.company.name} — recent work`}
+                            fill
+                            sizes="(max-width: 640px) 100vw, 50vw"
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <Honeycomb className="text-[hsl(var(--gold))]" opacity={0.25} />
+                        )}
+                        <div
+                          aria-hidden
+                          className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/60 to-transparent"
+                        />
+                        <div className="absolute bottom-3 left-4 right-4 flex items-center gap-3">
+                          {team.company.logoUrl ? (
+                            <Image
+                              src={team.company.logoUrl}
+                              alt=""
+                              width={40}
+                              height={40}
+                              className="h-10 w-10 rounded-full border-2 border-white/80 bg-white object-cover"
+                            />
+                          ) : (
+                            <LogoMark inverted className="h-10 w-10" />
+                          )}
+                          <p className="truncate text-lg font-bold text-white drop-shadow">
+                            {team.company.name}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="p-5">
+                        <div className="flex flex-wrap gap-1.5">
+                          {team.serviceCategories.slice(0, 3).map((cat) => (
+                            <span
+                              key={cat}
+                              className="rounded-full border border-[hsl(var(--gold))]/30 bg-[hsl(var(--gold))]/10 px-2.5 py-0.5 text-xs font-medium text-[hsl(var(--gold-foreground))]"
+                            >
+                              {cat}
+                            </span>
+                          ))}
+                        </div>
+                        <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
+                          {team.shortDescription}
+                        </p>
+                        <p className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[hsl(var(--gold-foreground))] group-hover:underline">
+                          See their pitch
+                          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        )}
 
         <section className="container mx-auto px-4 py-16">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto">

@@ -5,6 +5,7 @@ import {
   getCrossline,
   getUplineCards,
   getDownlineCards,
+  getDownlineTree,
   listManagersAndAbove,
 } from '@/lib/services/teams';
 import { prisma } from '@/lib/db';
@@ -20,16 +21,19 @@ import { BackButton } from '@/components/back-button';
 import { getInitials } from '@/lib/utils';
 import { TEAM_ROLE_LABELS } from '@/lib/types';
 import { TeamExplorer } from './team-explorer';
+import { TeamTreeVisual } from '@/components/team-tree-visual';
+import { SponsorInviteCard } from '@/components/sponsor-invite-card';
 import { Mail, Phone, ExternalLink, UserCheck } from 'lucide-react';
 
 export default async function TeamPage() {
   const user = await requireReferrerAccess();
 
-  const [me, crossline, upline, downline, managers, companyMeta] = await Promise.all([
+  const [me, crossline, upline, downline, tree, managers, companyMeta] = await Promise.all([
     getMemberCard(user.companyId),
     getCrossline(user.companyId),
     getUplineCards(user.companyId),
     getDownlineCards(user.companyId),
+    getDownlineTree(user.companyId),
     listManagersAndAbove(),
     prisma.company.findUnique({
       where: { id: user.companyId },
@@ -118,6 +122,24 @@ export default async function TeamPage() {
               </p>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Grow-the-team invite link */}
+      <SponsorInviteCard memberId={user.company.memberId} companyName={user.company.name} />
+
+      {/* Visual downline tree */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="mb-4">
+            <h2 className="text-lg font-semibold">My Team</h2>
+            <p className="text-sm text-muted-foreground">
+              {tree.directDownline.length === 0
+                ? 'No one has joined under you yet — share your invite link above to start building.'
+                : 'Everyone who rolls up to you, three levels deep.'}
+            </p>
+          </div>
+          <TeamTreeVisual root={tree} />
         </CardContent>
       </Card>
 

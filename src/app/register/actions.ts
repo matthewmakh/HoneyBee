@@ -1,6 +1,7 @@
 'use server';
 
 import { createCompany } from '@/lib/services/companies';
+import { resolveSponsorByMemberId } from '@/lib/services/teams';
 import { registerSchema } from '@/lib/validations';
 import type { ApiResult } from '@/lib/types';
 
@@ -15,6 +16,8 @@ interface RegisterInput {
   agreedToRules: boolean;
   referralSource?: string;
   enrollmentNote?: string;
+  /** Member ID from a sponsor's invite link (?sponsor=HB-000123). */
+  sponsorMemberId?: string | undefined;
 }
 
 export async function registerUser(input: RegisterInput): Promise<ApiResult<{ companyId: string }>> {
@@ -30,6 +33,12 @@ export async function registerUser(input: RegisterInput): Promise<ApiResult<{ co
       };
     }
 
+    // An invalid or suspended sponsor code never blocks a signup — the member
+    // simply enrolls unsponsored, the same as arriving without a link.
+    const sponsor = input.sponsorMemberId
+      ? await resolveSponsorByMemberId(input.sponsorMemberId)
+      : null;
+
     // Provider access requires admin approval — never granted at registration
     const company = await createCompany({
       name: input.companyName,
@@ -42,6 +51,7 @@ export async function registerUser(input: RegisterInput): Promise<ApiResult<{ co
       agreedToRules: input.agreedToRules,
       referralSource: input.referralSource?.trim() || null,
       enrollmentNote: input.enrollmentNote?.trim() || null,
+      sponsorCompanyId: sponsor?.id ?? null,
     });
 
     return {
@@ -55,4 +65,15 @@ export async function registerUser(input: RegisterInput): Promise<ApiResult<{ co
       error: message,
     };
   }
+}
+
+/**
+ * Used by the register page to show who the invite link belongs to before the
+ * visitor commits. Returns null for unknown or inactive sponsor codes.
+ */
+export async function getSponsorPreview(
+  memberId: string
+): Promise<{ name: string; memberId: string } | null> {
+  const sponsor = await resolveSponsorByMemberId(memberId);
+  return sponsor ? { name: sponsor.name, memberId: sponsor.memberId } : null;
 }

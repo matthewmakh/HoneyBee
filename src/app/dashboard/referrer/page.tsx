@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { getReferrerDashboardStats, getReferrerJobHistoryStats } from '@/lib/services/leads';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, Button, Badge, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { SponsorInviteCard } from '@/components/sponsor-invite-card';
 import { ArrowRight, DollarSign, Gift, Send, CheckCircle, Clock, TrendingUp, Trophy, Star, Target, Calendar, Megaphone } from 'lucide-react';
 
 export default async function ReferrerDashboardPage() {
@@ -38,6 +39,12 @@ export default async function ReferrerDashboardPage() {
           </Button>
         </Link>
       </div>
+
+      {/* Grow-the-team invite link */}
+      <SponsorInviteCard
+        memberId={session.user.company.memberId}
+        companyName={session.user.company.name}
+      />
 
       {/* Balance Cards - Available */}
       <div>
