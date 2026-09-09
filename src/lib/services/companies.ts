@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import { hash } from 'bcryptjs';
 import { generateMemberId } from '@/lib/utils';
+import { normalizeEmail, findUserIdByEmail } from '@/lib/email';
 import type { Company, CompanyWithProfile } from '@/lib/types';
 
 // ============================================================================
@@ -22,11 +23,12 @@ interface CreateCompanyInput {
  */
 export async function createCompany(input: CreateCompanyInput): Promise<Company> {
   // Check if email already exists
-  const existingUser = await prisma.user.findUnique({
-    where: { email: input.userEmail },
-  });
+  // Emails are case-insensitive — store normalized so "Mike@" and "mike@"
+  // can never become two different accounts.
+  const normalizedEmail = normalizeEmail(input.userEmail);
+  const existingUserId = await findUserIdByEmail(normalizedEmail);
 
-  if (existingUser) {
+  if (existingUserId) {
     throw new Error('Email already registered');
   }
 
@@ -63,7 +65,7 @@ export async function createCompany(input: CreateCompanyInput): Promise<Company>
       data: {
         companyId: newCompany.id,
         name: input.userName,
-        email: input.userEmail,
+        email: normalizedEmail,
         passwordHash,
         role: 'USER',
       },
