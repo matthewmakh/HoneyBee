@@ -2,6 +2,7 @@ import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { compare } from 'bcryptjs';
 import { prisma } from './db';
+import { findUserIdByEmail } from './email';
 import type { SessionUser } from './types';
 
 declare module 'next-auth' {
@@ -25,11 +26,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        const email = credentials.email as string;
         const password = credentials.password as string;
 
+        // Emails are case-insensitive: "Mike@..." and "mike@..." both sign in.
+        const userId = await findUserIdByEmail(credentials.email as string);
+        if (!userId) {
+          return null;
+        }
+
         const user = await prisma.user.findUnique({
-          where: { email },
+          where: { id: userId },
           include: {
             company: {
               select: {
