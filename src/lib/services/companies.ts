@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db';
 import { hash } from 'bcryptjs';
 import { generateMemberId } from '@/lib/utils';
+import { normalizeEmail, findUserIdByEmail } from '@/lib/email';
 import type { Company, CompanyWithProfile } from '@/lib/types';
 
 // ============================================================================
@@ -55,12 +56,10 @@ async function getNextMemberId(): Promise<string> {
 export async function createCompany(input: CreateCompanyInput): Promise<Company> {
   // Emails are case-insensitive — store them normalized and check for an
   // existing account regardless of case so "Mike@" and "mike@" can't collide.
-  const normalizedEmail = input.userEmail.trim().toLowerCase();
-  const existingUser = await prisma.user.findFirst({
-    where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
-  });
+  const normalizedEmail = normalizeEmail(input.userEmail);
+  const existingUserId = await findUserIdByEmail(normalizedEmail);
 
-  if (existingUser) {
+  if (existingUserId) {
     throw new Error('Email already registered');
   }
 
