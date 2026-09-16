@@ -152,11 +152,26 @@ model User {
   createdAt    DateTime  @default(now())
 
   // Relations
-  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  company             Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  passwordResetTokens PasswordResetToken[]
 
   @@index([companyId])
   @@index([email])
   @@index([lastActiveAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model ProviderProfile {

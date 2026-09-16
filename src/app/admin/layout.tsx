@@ -23,9 +23,11 @@ import {
   Users,
   Percent,
   Coins,
+  KeyRound,
 } from 'lucide-react';
 import { getPendingProviderApplications } from '@/lib/services/companies';
 import { getPendingWithdrawalRequests } from '@/lib/services/finance';
+import { listOpenResetRequests } from '@/lib/services/password-reset';
 
 export default async function AdminLayout({
   children,
@@ -49,9 +51,10 @@ export default async function AdminLayout({
 
   const { user } = session;
 
-  const [pendingApps, pendingWithdrawals] = await Promise.all([
+  const [pendingApps, pendingWithdrawals, openResets] = await Promise.all([
     getPendingProviderApplications(),
     getPendingWithdrawalRequests(),
+    listOpenResetRequests(),
   ]);
 
   // Companies (suspend/delete), Team (who is an admin) and Plan (payout
@@ -77,6 +80,12 @@ export default async function AdminLayout({
       label: 'Withdrawals',
       icon: Wallet,
       badge: pendingWithdrawals.length > 0 ? pendingWithdrawals.length : null,
+    },
+    {
+      href: '/admin/password-resets',
+      label: 'Resets',
+      icon: KeyRound,
+      badge: openResets.length > 0 ? openResets.length : null,
     },
   ];
 
